@@ -1,0 +1,19 @@
+1
+00:00:01,000 --> 00:00:04,000
+Hello everyone, today I will introduce how to make a video
+
+2
+00:00:05,000 --> 00:00:08,500
+First, we need to prepare a detailed script
+
+3
+00:00:09,000 --> 00:00:12,000
+Then shoot the video and edit it on CapCut
+
+4
+00:00:13,000 --> 00:00:16,500
+Finally, export the video and post it on YouTube
+
+5
+00:00:17,000 --> 00:00:20,000
+Thank you for watching, don't forget to subscribe to the channel

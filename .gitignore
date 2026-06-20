@@ -1,0 +1,26 @@
+# Environment variables
+.env
+*.env
+
+# Dependency directories
+node_modules/
+jspm_packages/
+web_modules/
+
+# Build outputs
+dist/
+dist-electron/
+build/
+bin/
+capcut-studio-portable/
+*.exe
+
+# Cache and User Data
+cache/
+user_data/
+*.log
+backend-log.txt
+
+# OS metadata
+.DS_Store
+Thumbs.db
