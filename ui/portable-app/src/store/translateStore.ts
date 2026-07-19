@@ -26,11 +26,29 @@ export const useTranslateStore = create<TranslateState>()(
       translateLoading: false,
       sessions: [],
       translateLogs: [],
+      voices: [],
+      audioUrl: null,
+      dialogueMode: false,
+      characterMap: [],
+      pipelineSteps: [
+        { name: 'Profile', status: 'idle' },
+        { name: 'Translate', status: 'idle' },
+        { name: 'Merge', status: 'idle' },
+        { name: 'TTS', status: 'idle' },
+        { name: 'Split', status: 'idle' },
+        { name: 'Render', status: 'idle' },
+      ],
 
       setSrtInput: (srtInput) => set({ srtInput }),
       setSelectedProvider: (selectedProvider) => set({ selectedProvider }),
       setTargetLang: (targetLang) => set({ targetLang }),
       setTranslatedSRT: (translatedSRT) => set({ translatedSRT }),
+      setDialogueMode: (dialogueMode) => set({ dialogueMode }),
+      updateCharacterVoice: (id, voiceType, resourceId) => {
+        const { characterMap } = get();
+        const updated = characterMap.map(c => c.id === id ? { ...c, voice_type: voiceType, resource_id: resourceId } : c);
+        set({ characterMap: updated });
+      },
 
       fetchProviders: async () => {
         try {
@@ -39,6 +57,16 @@ export const useTranslateStore = create<TranslateState>()(
           if (Array.isArray(data)) set({ providers: data });
         } catch (e) {
           console.error('Failed to fetch providers', e);
+        }
+      },
+
+      fetchVoices: async () => {
+        try {
+          const res = await fetch(`${BACKEND_URL}/api/voices`, { headers: HEADERS });
+          const data = await res.json();
+          if (Array.isArray(data)) set({ voices: data });
+        } catch (e) {
+          console.error('Failed to fetch voices', e);
         }
       },
 
@@ -87,8 +115,8 @@ export const useTranslateStore = create<TranslateState>()(
         await get().fetchProviders();
       },
 
-      startTranslation: async () => {
-        const { srtInput, targetLang, selectedProvider } = get();
+      startTranslation: async (stage?: 'profile' | 'dub') => {
+        const { srtInput, targetLang, selectedProvider, translateTaskId, characterMap } = get();
         if (!srtInput) return;
 
         set({
@@ -100,6 +128,7 @@ export const useTranslateStore = create<TranslateState>()(
           totalChunks: 0,
           completedChunks: 0,
           translateLogs: [],
+          audioUrl: null,
         });
 
         // Map target language code to full name for the translation prompt
@@ -107,14 +136,28 @@ export const useTranslateStore = create<TranslateState>()(
         const targetLangName = langObj ? langObj.name : targetLang;
 
         try {
+          const body: any = {
+            srt_text: srtInput,
+            target_lang: targetLangName,
+            provider: selectedProvider,
+            dialogue_mode: get().dialogueMode,
+          };
+          if (stage) {
+            body.stage = stage;
+          }
+          if (stage === 'dub' && translateTaskId) {
+            body.task_id = translateTaskId;
+            body.character_voices = characterMap.map(c => ({
+              id: c.id,
+              voice_type: c.voice_type || '',
+              resource_id: c.resource_id || ''
+            }));
+          }
+
           const res = await fetch(`${BACKEND_URL}/api/translate`, {
             method: 'POST',
             headers: HEADERS,
-            body: JSON.stringify({
-              srt_text: srtInput,
-              target_lang: targetLangName,
-              provider: selectedProvider,
-            }),
+            body: JSON.stringify(body),
           });
           const data = await res.json();
           if (!data.success) throw new Error(data.error || 'Failed to submit translation task');

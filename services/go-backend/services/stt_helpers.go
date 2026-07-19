@@ -3,6 +3,7 @@ package services
 import (
 	"fmt"
 	"hash/crc32"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -47,4 +48,67 @@ func VodSignedHeaders(method, reqUrl string, body []byte, creds UploadCredential
 		"tdid":                   device.Tdid,
 		"pf":                     device.Pf,
 	}
+}
+
+// OffsetSRT parses SRT, offsets all timestamps, and adjusts subtitle index counters.
+func OffsetSRT(srt string, offsetMs int, startIndex int) (string, int) {
+	lines := strings.Split(strings.ReplaceAll(srt, "\r\n", "\n"), "\n")
+	var result []string
+	indexCounter := startIndex
+	expectTime := false
+
+	for i := 0; i < len(lines); i++ {
+		line := strings.TrimSpace(lines[i])
+		if line == "" {
+			if len(result) > 0 && result[len(result)-1] != "" {
+				result = append(result, "")
+			}
+			continue
+		}
+
+		// Check if it's the index line
+		if _, err := strconv.Atoi(line); err == nil && !expectTime {
+			result = append(result, strconv.Itoa(indexCounter))
+			indexCounter++
+			expectTime = true
+			continue
+		}
+
+		if strings.Contains(line, "-->") {
+			parts := strings.Split(line, "-->")
+			if len(parts) == 2 {
+				start := shiftSRTTime(strings.TrimSpace(parts[0]), offsetMs)
+				end := shiftSRTTime(strings.TrimSpace(parts[1]), offsetMs)
+				result = append(result, fmt.Sprintf("%s --> %s", start, end))
+			} else {
+				result = append(result, line)
+			}
+			expectTime = false
+			continue
+		}
+
+		result = append(result, line)
+		expectTime = false
+	}
+
+	return strings.Join(result, "\n"), indexCounter
+}
+
+func shiftSRTTime(t string, offsetMs int) string {
+	var h, m, s, ms int
+	_, err := fmt.Sscanf(t, "%d:%d:%d,%d", &h, &m, &s, &ms)
+	if err != nil {
+		return t
+	}
+	totalMs := h*3600000 + m*60000 + s*1000 + ms + offsetMs
+	if totalMs < 0 {
+		totalMs = 0
+	}
+	nh := totalMs / 3600000
+	totalMs %= 3600000
+	nm := totalMs / 60000
+	totalMs %= 60000
+	ns := totalMs / 1000
+	nms := totalMs % 1000
+	return fmt.Sprintf("%02d:%02d:%02d,%03d", nh, nm, ns, nms)
 }

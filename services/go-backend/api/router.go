@@ -14,8 +14,9 @@ func NewRouter() http.Handler {
 	mux := http.NewServeMux()
 
 	wd, _ := os.Getwd()
-	// Serve static files from cache
+	// Serve static files from cache and projects
 	mux.Handle("/cache/", http.StripPrefix("/cache/", http.FileServer(http.Dir(filepath.Join(wd, "cache")))))
+	mux.Handle("/projects/", http.StripPrefix("/projects/", http.FileServer(http.Dir(filepath.Join(wd, "projects")))))
 
 
 	// Public Health / Info check
@@ -54,13 +55,20 @@ func NewRouter() http.Handler {
 
 	// Services endpoints
 	mux.HandleFunc("/api/tts", services.HandleTTS)
+	mux.HandleFunc("/api/vieneu/tts", services.HandleVieNeuTTS)
+	mux.HandleFunc("/api/vieneu/status", services.HandleVieNeuStatus)
+	mux.HandleFunc("/api/vieneu/setup", services.HandleVieNeuSetup)
 	mux.HandleFunc("/api/voices", services.HandleVoices)
 	mux.HandleFunc("/api/srt-to-speak", services.HandleSRTToSpeak)
 	mux.HandleFunc("/api/srt-to-speak/status", services.HandleSRTStatus)
 	mux.HandleFunc("/api/cache/clean", services.HandleCleanCache)
 	mux.HandleFunc("/api/cache/stats", services.HandleCacheStats)
 	mux.HandleFunc("/api/system/info", services.HandleSystemInfo)
+	mux.HandleFunc("/api/system/gpu", services.HandleGPU)
 	mux.HandleFunc("/api/system/generated-files", services.HandleListGeneratedFiles)
+	mux.HandleFunc("/api/system/memory", services.HandleMemoryStatus)
+	mux.HandleFunc("/api/system/memory/optimize", services.HandleMemoryOptimize)
+	mux.HandleFunc("/api/system/memory/config", services.HandleMemoryConfig)
 	mux.HandleFunc("/api/stt", services.HandleSTT)
 	mux.HandleFunc("/api/stt/status", services.HandleSTTStatus)
 	mux.HandleFunc("/api/stt/export", services.HandleExportTranscript)
@@ -74,6 +82,35 @@ func NewRouter() http.Handler {
 	mux.HandleFunc("/api/translate/capture/stop", services.HandleCaptureStop)
 	mux.HandleFunc("/api/translate/sessions", services.HandleListSessions)
 	mux.HandleFunc("/api/translate/sessions/delete", services.HandleDeleteSession)
+
+	// OCR endpoints
+	mux.HandleFunc("/api/ocr", services.HandleOCR)
+	mux.HandleFunc("/api/ocr/capture/start", services.HandleOCRCaptureStart)
+	mux.HandleFunc("/api/ocr/capture/stop", services.HandleOCRCaptureStop)
+	mux.HandleFunc("/api/ocr/sessions", services.HandleOCRListSessions)
+	mux.HandleFunc("/api/ocr/sessions/delete", services.HandleOCRDeleteSession)
+
+	// Video endpoints (ViDub Pro Phase 1)
+	mux.HandleFunc("/api/video/upload", services.HandleVideoUpload)
+	mux.HandleFunc("/api/video/info", services.HandleVideoInfo)
+	mux.HandleFunc("/api/video/list", services.HandleVideoList)
+	mux.HandleFunc("/api/video/frames", services.HandleExtractFrames)
+	mux.HandleFunc("/api/video/preview", services.HandleVideoPreview)
+	mux.HandleFunc("/api/video/render", services.HandleVideoRender)
+	mux.HandleFunc("/api/video/ocr-pipeline", services.HandleVideoOCRPipeline)
+	mux.HandleFunc("/api/video/ocr-status", services.HandleVideoOCRStatus)
+
+	// Pipeline endpoints (ViDub Pro Phase 3)
+	mux.HandleFunc("/api/pipeline/start", services.HandlePipelineStart)
+	mux.HandleFunc("/api/pipeline/status", services.HandlePipelineStatus)
+
+	// Render endpoints (ViDub Pro Phase 5)
+	mux.HandleFunc("/api/render/presets", services.HandleRenderPresets)
+
+	// Batch endpoints (ViDub Pro Phase 6)
+	mux.HandleFunc("/api/batch/add", services.HandleBatchAdd)
+	mux.HandleFunc("/api/batch/status", services.HandleBatchStatus)
+
 
 
 	// Wrap Mux with Security, Auth, and Logger middlewares

@@ -86,7 +86,7 @@ export default function TranslationConfigPanel() {
       </div>
 
       <button
-        onClick={startTranslation}
+        onClick={() => startTranslation()}
         disabled={translateLoading || !srtInput}
         className="btn-primary"
         style={{ marginTop: '0.5rem' }}

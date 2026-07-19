@@ -21,6 +21,42 @@ type ResponsePayload struct {
 	Translations []JSONSegment `json:"translations"`
 }
 
+type OverlapChunk struct {
+	CoreSegments  []SRTSegment
+	OverlapPrefix []SRTSegment
+}
+
+func ChunkSegmentsWithOverlap(segments []SRTSegment, chunkSize, overlapSize int) []OverlapChunk {
+	var chunks []OverlapChunk
+	n := len(segments)
+	if n == 0 {
+		return chunks
+	}
+
+	for i := 0; i < n; i += chunkSize {
+		end := i + chunkSize
+		if end > n {
+			end = n
+		}
+
+		core := segments[i:end]
+		var prefix []SRTSegment
+		if i > 0 {
+			startPrefix := i - overlapSize
+			if startPrefix < 0 {
+				startPrefix = 0
+			}
+			prefix = segments[startPrefix:i]
+		}
+
+		chunks = append(chunks, OverlapChunk{
+			CoreSegments:  core,
+			OverlapPrefix: prefix,
+		})
+	}
+	return chunks
+}
+
 // ChunkSegments splits a list of SRT segments into smaller chunks based on max character count.
 func ChunkSegments(segments []SRTSegment, maxChars int) [][]SRTSegment {
 	var chunks [][]SRTSegment
@@ -66,21 +102,55 @@ func BuildTranslationJSON(segs []SRTSegment, targetLang string) (string, error) 
 	return string(data), nil
 }
 
+func CleanAndExtractJSON(input string) string {
+	cleaned := strings.TrimSpace(input)
+	if strings.HasPrefix(cleaned, ")]}'") {
+		cleaned = strings.TrimPrefix(cleaned, ")]}'")
+		cleaned = strings.TrimSpace(cleaned)
+	}
+
+	if idx := strings.Index(cleaned, "```json"); idx != -1 {
+		sub := cleaned[idx+7:]
+		if endIdx := strings.Index(sub, "```"); endIdx != -1 {
+			cleaned = strings.TrimSpace(sub[:endIdx])
+		}
+	} else if idx := strings.Index(cleaned, "```"); idx != -1 {
+		sub := cleaned[idx+3:]
+		if endIdx := strings.Index(sub, "```"); endIdx != -1 {
+			cleaned = strings.TrimSpace(sub[:endIdx])
+		}
+	}
+
+	// Step 1: Extract block between first { and last } before unescaping,
+	// because searching for { and } is safer when escape slashes are still there.
+	start := strings.Index(cleaned, "{")
+	end := strings.LastIndex(cleaned, "}")
+	if start != -1 && end != -1 && end > start {
+		cleaned = cleaned[start : end+1]
+	}
+
+	// Step 2: Perform robust unescaping of double and single escaped characters
+	cleaned = strings.ReplaceAll(cleaned, `\\\"`, `"`)
+	cleaned = strings.ReplaceAll(cleaned, `\\n`, "\n")
+	cleaned = strings.ReplaceAll(cleaned, `\\t`, "\t")
+	cleaned = strings.ReplaceAll(cleaned, `\\\\`, `\`)
+	cleaned = strings.ReplaceAll(cleaned, `\"`, `"`)
+	cleaned = strings.ReplaceAll(cleaned, `\n`, "\n")
+	cleaned = strings.ReplaceAll(cleaned, `\t`, "\t")
+	
+	// Step 3: Run { and } check again on the unescaped result just to be clean
+	start = strings.Index(cleaned, "{")
+	end = strings.LastIndex(cleaned, "}")
+	if start != -1 && end != -1 && end > start {
+		cleaned = cleaned[start : end+1]
+	}
+
+	return cleaned
+}
+
 // ParseTranslationJSON parses the AI's JSON response and maps the translated text back to SRT segments.
 func ParseTranslationJSON(jsonResponse string, originalSegs []SRTSegment) []TranslatedSegment {
-	// Clean markdown block wrappers if present (e.g. ```json ... ```)
-	cleaned := strings.TrimSpace(jsonResponse)
-	if strings.HasPrefix(cleaned, "```") {
-		lines := strings.Split(cleaned, "\n")
-		var contentLines []string
-		for _, line := range lines {
-			trimmedLine := strings.TrimSpace(line)
-			if !strings.HasPrefix(trimmedLine, "```") {
-				contentLines = append(contentLines, line)
-			}
-		}
-		cleaned = strings.Join(contentLines, "\n")
-	}
+	cleaned := CleanAndExtractJSON(jsonResponse)
 
 	var payload ResponsePayload
 	err := json.Unmarshal([]byte(cleaned), &payload)

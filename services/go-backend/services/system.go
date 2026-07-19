@@ -1,10 +1,14 @@
 package services
 
 import (
+	"encoding/json"
 	"go-backend/services/go-backend/internal/httpx"
 	"net/http"
 	"os"
+	"os/exec"
 	"path/filepath"
+	"strings"
+	"sync"
 )
 
 func HandleSystemInfo(w http.ResponseWriter, r *http.Request) {
@@ -109,4 +113,88 @@ func HandleListGeneratedFiles(w http.ResponseWriter, r *http.Request) {
 	}
 
 	httpx.WriteJSON(w, list)
+}
+
+type SystemConfig struct {
+	Hwaccel string `json:"hwaccel"`
+}
+
+var cachedHwaccel = "none"
+var hwaccelMutex sync.Mutex
+var hwaccelLoaded = false
+
+func GetHwaccelSetting() string {
+	hwaccelMutex.Lock()
+	defer hwaccelMutex.Unlock()
+	if hwaccelLoaded {
+		return cachedHwaccel
+	}
+	wd, _ := os.Getwd()
+	configPath := filepath.Join(wd, "projects", "system_config.json")
+	if _, err := os.Stat(configPath); err == nil {
+		data, err := os.ReadFile(configPath)
+		if err == nil {
+			var config SystemConfig
+			if json.Unmarshal(data, &config) == nil {
+				cachedHwaccel = config.Hwaccel
+			}
+		}
+	}
+	hwaccelLoaded = true
+	return cachedHwaccel
+}
+
+func SetHwaccelSetting(val string) {
+	hwaccelMutex.Lock()
+	defer hwaccelMutex.Unlock()
+	cachedHwaccel = val
+	hwaccelLoaded = true
+	wd, _ := os.Getwd()
+	_ = os.MkdirAll(filepath.Join(wd, "projects"), 0755)
+	configPath := filepath.Join(wd, "projects", "system_config.json")
+	config := SystemConfig{Hwaccel: val}
+	data, _ := json.MarshalIndent(config, "", "  ")
+	_ = os.WriteFile(configPath, data, 0644)
+}
+
+func HandleGPU(w http.ResponseWriter, r *http.Request) {
+	if httpx.SetCORSHeaders(w, r) {
+		return
+	}
+	if r.Method == "GET" {
+		var gpus []string
+		cmd := exec.Command("wmic", "path", "win32_VideoController", "get", "name")
+		out, err := cmd.CombinedOutput()
+		if err == nil {
+			lines := strings.Split(string(out), "\r\n")
+			if len(lines) <= 1 {
+				lines = strings.Split(string(out), "\n")
+			}
+			for _, line := range lines {
+				line = strings.TrimSpace(line)
+				if line != "" && line != "Name" && !strings.HasPrefix(line, "Name") {
+					gpus = append(gpus, line)
+				}
+			}
+		}
+		httpx.WriteJSON(w, map[string]interface{}{
+			"gpus":            gpus,
+			"hwaccel_options": []string{"none", "auto", "cuda", "dxva2", "d3d11va", "qsv"},
+			"current_hwaccel": GetHwaccelSetting(),
+		})
+		return
+	}
+	if r.Method == "POST" {
+		var req struct {
+			Hwaccel string `json:"hwaccel"`
+		}
+		if err := httpx.ParseJSON(r, &req); err != nil {
+			httpx.WriteError(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		SetHwaccelSetting(req.Hwaccel)
+		httpx.WriteJSON(w, map[string]interface{}{"success": true, "hwaccel": req.Hwaccel})
+		return
+	}
+	httpx.WriteError(w, "Method not allowed", http.StatusMethodNotAllowed)
 }

@@ -47,17 +47,49 @@ func HandleTranslate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	taskId := uuid.New().String()
-
-	// Create and store task progress
-	progress := &TranslateTaskProgress{
-		TaskId:          taskId,
-		Status:          "pending",
-		Progress:        0,
-		TotalChunks:     0,
-		CompletedChunks: 0,
+	taskId := req.TaskId
+	if req.Stage == "dub" && taskId != "" {
+		// Resume existing task for dubbing stage
+		val, exists := InFlightTranslateTasks.Load(taskId)
+		if exists {
+			p, ok := val.(*TranslateTaskProgress)
+			if ok {
+				p.Status = "pending"
+				p.Progress = 20
+				p.Error = ""
+				if p.CharacterMap == nil {
+					projectDir := fmt.Sprintf("projects/dialogue_%s", taskId)
+					if cmap, err := LoadCharacterMap(projectDir); err == nil {
+						p.CharacterMap = cmap
+					}
+				}
+				if p.CharacterMap != nil {
+					voiceMap := make(map[string]CharacterVoice)
+					for _, cv := range req.CharacterVoices {
+						voiceMap[cv.ID] = cv
+					}
+					for i, char := range p.CharacterMap.Characters {
+						if cv, exists := voiceMap[char.ID]; exists {
+							p.CharacterMap.Characters[i].VoiceType = cv.VoiceType
+							p.CharacterMap.Characters[i].ResourceID = cv.ResourceID
+						}
+					}
+				}
+				InFlightTranslateTasks.Store(taskId, p)
+			}
+		}
+	} else {
+		// New task
+		taskId = uuid.New().String()
+		progress := &TranslateTaskProgress{
+			TaskId:          taskId,
+			Status:          "pending",
+			Progress:        0,
+			TotalChunks:     0,
+			CompletedChunks: 0,
+		}
+		InFlightTranslateTasks.Store(taskId, progress)
 	}
-	InFlightTranslateTasks.Store(taskId, progress)
 
 	// Launch background worker
 	go TranslateWorker(taskId, req, segments)
@@ -89,6 +121,7 @@ func HandleListProviders(w http.ResponseWriter, r *http.Request) {
 	providers := []ProviderInfo{
 		{ID: "gemini-api", Name: "Gemini Direct API", Available: os.Getenv("GEMINI_API_KEY") != "", HasSession: false},
 		{ID: "openai-api", Name: "OpenAI Direct API", Available: os.Getenv("OPENAI_API_KEY") != "", HasSession: false},
+		{ID: "chatgpt-api", Name: "ChatGPT Direct API", Available: os.Getenv("CHATGPT_API_KEY") != "" || os.Getenv("OPENAI_API_KEY") != "", HasSession: false},
 	}
 
 	// Fetch bridge sessions to add browser session options
@@ -118,6 +151,8 @@ func HandleListProviders(w http.ResponseWriter, r *http.Request) {
 				{"chatgpt", "ChatGPT Browser Session"},
 				{"qwen", "Qwen Browser Session"},
 				{"minimax", "Minimax Browser Session"},
+				{"aistudio", "Google AI Studio Browser Session"},
+				{"z-ai", "Z.ai Browser Session"},
 			}
 
 			for _, sp := range sessionProviders {

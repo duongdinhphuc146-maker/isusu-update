@@ -24,21 +24,29 @@ export const createPollLoop = (taskId: string, set: any) => {
       if (!pollRes.ok) throw new Error(progress.error || 'Polling error');
 
       consecutiveErrors = 0;
-      set({
+      set((state: any) => ({
         translateStatus: progress.status,
         translateProgress: progress.progress,
         completedChunks: progress.completed_chunks,
         totalChunks: progress.total_chunks,
         translateError: progress.error || null,
         translateLogs: progress.logs || [],
-      });
+        characterMap: (progress.character_map && progress.character_map.characters && progress.character_map.characters.length > 0)
+          ? progress.character_map.characters
+          : state.characterMap,
+        audioUrl: progress.audio_url || null,
+      }));
 
       if (progress.status === 'succeed') {
         if (pollInterval) clearInterval(pollInterval);
         set({
           translatedSRT: progress.translated_srt,
           translateLoading: false,
-          translateTaskId: null,
+        });
+      } else if (progress.status === 'waiting_voices') {
+        if (pollInterval) clearInterval(pollInterval);
+        set({
+          translateLoading: false,
         });
       } else if (progress.status === 'failed') {
         if (pollInterval) clearInterval(pollInterval);

@@ -8,7 +8,7 @@ interface EditorSettings {
 }
 
 interface EditorState {
-  activeTab: 'home' | 'tts' | 'srt' | 'stt' | 'system' | 'translate';
+  activeTab: 'home' | 'tts' | 'srt' | 'stt' | 'system' | 'translate' | 'dialogue' | 'ocr' | 'video' | 'ocr-pipeline' | 'pipeline-wizard' | 'batch' | 'vieneu-tts';
   selectedVoice: Voice;
   voices: Voice[];
   backendStatus: 'checking' | 'running' | 'offline';
@@ -35,7 +35,7 @@ interface EditorState {
   sttError: string | null;
 
   // Actions
-  setActiveTab: (tab: 'home' | 'tts' | 'srt' | 'stt' | 'system' | 'translate') => void;
+  setActiveTab: (tab: 'home' | 'tts' | 'srt' | 'stt' | 'system' | 'translate' | 'dialogue' | 'ocr' | 'video' | 'ocr-pipeline' | 'pipeline-wizard' | 'batch' | 'vieneu-tts') => void;
   setSelectedVoice: (voice: Voice) => void;
   setVoices: (voices: Voice[]) => void;
   setBackendStatus: (status: 'checking' | 'running' | 'offline') => void;

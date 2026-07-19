@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
-import { Volume2, FileText, Upload, Sparkles, Cpu, LayoutDashboard, Languages, RotateCcw, RefreshCw } from 'lucide-react';
+import { Volume2, FileText, Upload, Cpu, LayoutDashboard, Languages, MessageSquare, Camera, Film } from 'lucide-react';
 import { useSystemStore } from '../../store/systemStore';
 import { useEditorStore } from '../../store/editorStore';
+import Header from '../components/Header';
+import SystemMonitor from '../pages/components/SystemMonitor';
 
 interface DashboardLayoutProps {
   activeTab: string;
@@ -65,75 +67,13 @@ export default function DashboardLayout({ activeTab, setActiveTab, backendStatus
 
   return (
     <div className="app-container">
-      {/* Header */}
-      <header className="app-header">
-        <div className="brand-wrapper">
-          <div className="brand-icon">
-            <Sparkles className="w-5 h-5 text-white" />
-          </div>
-          <div>
-            <h1 className="brand-title">
-              CAPCUT STUDIO <span className="brand-badge">PORTABLE</span>
-            </h1>
-            <p style={{ fontSize: '11px', color: 'var(--color-text-secondary)' }}>
-              Giải pháp biên tập video nhẹ &amp; chạy ngay không cần cài đặt
-            </p>
-          </div>
-        </div>
-
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <div className="header-status">
-            <span className={`status-dot ${backendStatus === 'running' ? 'active' : 'offline'}`} />
-            <span>
-              Dịch vụ Go Backend: {backendStatus === 'running' ? 'Đang hoạt động (Port 5000)' : 'Ngoại tuyến'}
-            </span>
-          </div>
-
-          {backendStatus === 'offline' && (
-            <button
-              onClick={handleReconnect}
-              className="btn-download"
-              style={{ padding: '6px 12px', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', borderColor: 'rgba(239, 68, 68, 0.4)', color: '#ff6b6b' }}
-              title="Thử kết nối lại với Go Backend"
-            >
-              <RefreshCw className="w-3.5 h-3.5" />
-              <span>Kết Nối Lại</span>
-            </button>
-          )}
-
-          <button
-            onClick={handleReloadUI}
-            className="btn-download"
-            style={{ padding: '6px 12px', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer' }}
-            title="Tải lại giao diện hiển thị"
-          >
-            <RotateCcw className="w-3.5 h-3.5" />
-            <span>Tải Lại UI</span>
-          </button>
-
-          {!!(window as any).electronAPI?.isElectron && (
-            <button
-              onClick={handleRestartServer}
-              disabled={restarting}
-              className="btn-download"
-              style={{ 
-                padding: '6px 12px', 
-                fontSize: '0.75rem', 
-                display: 'flex', 
-                alignItems: 'center', 
-                gap: '6px', 
-                borderColor: restarting ? 'var(--color-border)' : 'rgba(0, 240, 255, 0.4)', 
-                color: restarting ? 'var(--color-text-muted)' : 'var(--color-cyan)', 
-                cursor: restarting ? 'not-allowed' : 'pointer' 
-              }}
-              title="Khởi động lại toàn bộ tiến trình Go Backend & AI Translate Bridge"
-            >
-              <RefreshCw className="w-3.5 h-3.5" style={{ animation: restarting ? 'spin 1s linear infinite' : 'none' }} />
-              <span>{restarting ? 'Đang khởi động lại...' : 'Khởi Động Lại Server'}</span>
-            </button>
-          )}
-        </div>
-      </header>
+      <Header
+        backendStatus={backendStatus}
+        restarting={restarting}
+        handleReconnect={handleReconnect}
+        handleReloadUI={handleReloadUI}
+        handleRestartServer={handleRestartServer}
+      />
 
       {/* Main Container */}
       <main className="main-layout">
@@ -153,6 +93,14 @@ export default function DashboardLayout({ activeTab, setActiveTab, backendStatus
           >
             <Volume2 className="w-5 h-5" />
             <span>CapCut TTS Generator</span>
+          </button>
+
+          <button 
+            onClick={() => setActiveTab('vieneu-tts')}
+            className={`nav-btn ${activeTab === 'vieneu-tts' ? 'active' : ''}`}
+          >
+            <Volume2 className="w-5 h-5 text-indigo-400" />
+            <span>VieNeu-TTS (Local/API)</span>
           </button>
 
           <button 
@@ -180,6 +128,32 @@ export default function DashboardLayout({ activeTab, setActiveTab, backendStatus
           </button>
 
           <button 
+            onClick={() => setActiveTab('dialogue')}
+            className={`nav-btn ${activeTab === 'dialogue' ? 'active' : ''}`}
+          >
+            <MessageSquare className="w-5 h-5" />
+            <span>Dialogue Mode</span>
+          </button>
+
+          <button 
+            onClick={() => setActiveTab('ocr')}
+            className={`nav-btn ${activeTab === 'ocr' ? 'active' : ''}`}
+          >
+            <Camera className="w-5 h-5" />
+            <span>AI OCR</span>
+          </button>
+
+          <button 
+            onClick={() => setActiveTab('video')}
+            className={`nav-btn ${activeTab === 'video' ? 'active' : ''}`}
+          >
+            <Film className="w-5 h-5" />
+            <span>Video Manager</span>
+          </button>
+
+
+
+          <button 
             onClick={() => setActiveTab('system')}
             className={`nav-btn ${activeTab === 'system' ? 'active' : ''}`}
           >
@@ -190,6 +164,7 @@ export default function DashboardLayout({ activeTab, setActiveTab, backendStatus
 
         {/* Content Area */}
         <section className="content-panel">
+          <SystemMonitor />
           {children}
         </section>
       </main>

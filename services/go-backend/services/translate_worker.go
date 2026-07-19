@@ -13,6 +13,10 @@ import (
 
 // TranslateWorker processes the translation task asynchronously in chunks.
 func TranslateWorker(taskId string, req TranslateRequest, segments []SRTSegment) {
+	if req.DialogueMode {
+		TranslateWorkerV2(taskId, req, segments)
+		return
+	}
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)
 	defer cancel()
 
@@ -35,9 +39,11 @@ func TranslateWorker(taskId string, req TranslateRequest, segments []SRTSegment)
 		}
 	}
 
-	chunks := ChunkSegments(segments, 3000)
+	// Chunking với overlap để cung cấp context window (7-10 câu xung quanh)
+	overlapSize := 8
+	chunks := ChunkSegmentsWithOverlap(segments, 15, overlapSize)
 	totalChunks := len(chunks)
-	updateProgress("processing", 5, 0, totalChunks, "", "", fmt.Sprintf("Bắt đầu dịch phụ đề: %d segments chia thành %d chunks.", len(segments), totalChunks))
+	updateProgress("processing", 5, 0, totalChunks, "", "", fmt.Sprintf("Bắt đầu dịch phụ đề có context-window: %d segments chia thành %d chunks.", len(segments), totalChunks))
 
 	var allTranslated []TranslatedSegment
 
@@ -52,11 +58,12 @@ func TranslateWorker(taskId string, req TranslateRequest, segments []SRTSegment)
 		var uncachedSegs []SRTSegment
 		var translatedChunk []TranslatedSegment
 
-		logMsg := fmt.Sprintf("[Chunk %d/%d] Đang xử lý các segment từ ID %d đến %d...", chunkIdx+1, totalChunks, chunk[0].Index, chunk[len(chunk)-1].Index)
+		core := chunk.CoreSegments
+		logMsg := fmt.Sprintf("[Chunk %d/%d] Đang xử lý các segment từ ID %d đến %d...", chunkIdx+1, totalChunks, core[0].Index, core[len(core)-1].Index)
 		updateProgress("processing", 5+(chunkIdx*90/totalChunks), chunkIdx, totalChunks, "", "", logMsg)
 
 		// 1. Check cache first
-		for _, seg := range chunk {
+		for _, seg := range core {
 			key := GetCacheKey(seg.Text, req.TargetLang, req.Provider)
 			if transText, exists := GetCachedTranslation(key); exists {
 				translatedChunk = append(translatedChunk, TranslatedSegment{
@@ -71,12 +78,19 @@ func TranslateWorker(taskId string, req TranslateRequest, segments []SRTSegment)
 			}
 		}
 
-		if len(uncachedSegs) < len(chunk) {
-			updateProgress("processing", 5+(chunkIdx*90/totalChunks), chunkIdx, totalChunks, "", "", fmt.Sprintf("  - Đã tìm thấy %d/%d segment trong bộ nhớ đệm (Cache).", len(chunk)-len(uncachedSegs), len(chunk)))
+		if len(uncachedSegs) < len(core) {
+			updateProgress("processing", 5+(chunkIdx*90/totalChunks), chunkIdx, totalChunks, "", "", fmt.Sprintf("  - Đã tìm thấy %d/%d segment trong bộ nhớ đệm (Cache).", len(core)-len(uncachedSegs), len(core)))
 		}
 
 		// 2. Translate uncached segments
 		if len(uncachedSegs) > 0 {
+			// Xây dựng prompt chứa cả Core segments cần dịch và Context prefix để gợi ý AI dịch mượt mà hơn
+			var contextTexts []string
+			for _, prefixSeg := range chunk.OverlapPrefix {
+				contextTexts = append(contextTexts, fmt.Sprintf("[Trước đó] ID %d: %s", prefixSeg.Index, prefixSeg.Text))
+			}
+			contextString := strings.Join(contextTexts, "\n")
+
 			updateProgress("processing", 5+(chunkIdx*90/totalChunks), chunkIdx, totalChunks, "", "", fmt.Sprintf("  - Gửi %d segment chưa dịch đến %s...", len(uncachedSegs), req.Provider))
 			jsonPrompt, err := BuildTranslationJSON(uncachedSegs, req.TargetLang)
 			if err != nil {
@@ -91,12 +105,32 @@ func TranslateWorker(taskId string, req TranslateRequest, segments []SRTSegment)
 			if strings.HasSuffix(req.Provider, "-session") {
 				bridgeProvider := strings.TrimSuffix(req.Provider, "-session")
 				systemInstructions := fmt.Sprintf("You are a professional subtitle translator. Translate the 'text' field of each segment in the input JSON list to %s naturally, fluently, and preserving all context (slang, adult/sexual terms) without censoring or softening. Keep the original 'id' exactly as is. Output MUST be valid JSON structure matching: {\"translations\": [{\"id\": N, \"text\": \"translated text\"}]}. Output only the JSON. Do not include markdown code block wrappers.", req.TargetLang)
-				fullSessionPrompt := fmt.Sprintf("%s\n\nInput segments JSON:\n%s", systemInstructions, jsonPrompt)
+				
+				fullSessionPrompt := systemInstructions
+				if contextString != "" {
+					fullSessionPrompt += fmt.Sprintf("\n\nContext of preceding lines for reference:\n%s", contextString)
+				}
+				fullSessionPrompt += fmt.Sprintf("\n\nInput segments JSON to translate:\n%s", jsonPrompt)
+				
 				translatedJSON, err = ReplayViaBridge(ctx, fullSessionPrompt, bridgeProvider)
 			} else if req.Provider == "gemini-api" {
-				translatedJSON, err = TranslateViaGeminiAPI(ctx, jsonPrompt, os.Getenv("GEMINI_API_KEY"))
+				prompt := jsonPrompt
+				if contextString != "" {
+					prompt = fmt.Sprintf("Context of preceding lines for reference:\n%s\n\nSegments to translate:\n%s", contextString, jsonPrompt)
+				}
+				translatedJSON, err = TranslateViaGeminiAPI(ctx, prompt, os.Getenv("GEMINI_API_KEY"))
 			} else if req.Provider == "openai-api" {
-				translatedJSON, err = TranslateViaOpenAIAPI(ctx, jsonPrompt, os.Getenv("OPENAI_API_KEY"))
+				prompt := jsonPrompt
+				if contextString != "" {
+					prompt = fmt.Sprintf("Context of preceding lines for reference:\n%s\n\nSegments to translate:\n%s", contextString, jsonPrompt)
+				}
+				translatedJSON, err = TranslateViaOpenAIAPI(ctx, prompt, os.Getenv("OPENAI_API_KEY"))
+			} else if req.Provider == "chatgpt-api" {
+				prompt := jsonPrompt
+				if contextString != "" {
+					prompt = fmt.Sprintf("Context of preceding lines for reference:\n%s\n\nSegments to translate:\n%s", contextString, jsonPrompt)
+				}
+				translatedJSON, err = TranslateViaChatGPTAPI(ctx, prompt, os.Getenv("CHATGPT_API_KEY"))
 			} else {
 				err = fmt.Errorf("unknown translation provider: %s", req.Provider)
 			}
@@ -113,7 +147,6 @@ func TranslateWorker(taskId string, req TranslateRequest, segments []SRTSegment)
 			for _, trans := range newlyTranslated {
 				if trans.TranslatedText != trans.OriginalText {
 					matchedCount++
-					// Cache the result only if it was successfully translated (different from original)
 					key := GetCacheKey(trans.OriginalText, req.TargetLang, req.Provider)
 					SetCachedTranslation(key, trans.OriginalText, trans.TranslatedText, req.TargetLang, req.Provider)
 				}
@@ -121,9 +154,7 @@ func TranslateWorker(taskId string, req TranslateRequest, segments []SRTSegment)
 			}
 			updateProgress("processing", 5+(chunkIdx*90/totalChunks), chunkIdx, totalChunks, "", "", fmt.Sprintf("  - Hoàn thành: dịch thành công %d/%d segment từ AI.", matchedCount, len(uncachedSegs)))
 
-			// Jitter only if we actually hit the API and it's not the last chunk
 			if chunkIdx < totalChunks-1 {
-				// pseudo-random jitter 2-5 seconds
 				jitterSecs := 2 + (time.Now().Nanosecond() % 4)
 				updateProgress("processing", 5+(chunkIdx*90/totalChunks), chunkIdx, totalChunks, "", "", fmt.Sprintf("  - Nghỉ %d giây trước chunk tiếp theo...", jitterSecs))
 				select {
@@ -141,7 +172,6 @@ func TranslateWorker(taskId string, req TranslateRequest, segments []SRTSegment)
 		updateProgress("processing", progressPercent, completed, totalChunks, "", "", fmt.Sprintf("[Chunk %d/%d] Hoàn thành.", completed, totalChunks))
 	}
 
-	// Sort segments to match original order just in case
 	sort.Slice(allTranslated, func(i, j int) bool {
 		return allTranslated[i].Index < allTranslated[j].Index
 	})

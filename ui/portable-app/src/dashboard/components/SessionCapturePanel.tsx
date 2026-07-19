@@ -68,6 +68,8 @@ export default function SessionCapturePanel() {
     { id: 'chatgpt', name: 'ChatGPT', desc: 'chatgpt.com' },
     { id: 'qwen', name: 'Qwen AI', desc: 'chat.qwen.ai' },
     { id: 'minimax', name: 'Minimax / Hailuo', desc: 'hailuoai.video' },
+    { id: 'aistudio', name: 'Google AI Studio', desc: 'aistudio.google.com' },
+    { id: 'z-ai', name: 'Z.ai', desc: 'z.ai' },
   ];
 
   return (

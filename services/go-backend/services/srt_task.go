@@ -3,16 +3,13 @@ package services
 import (
 	"context"
 	"crypto/md5"
-	"crypto/rand"
 	"encoding/hex"
 	"go-backend/services/go-backend/internal/httpx"
 	"go-backend/services/go-backend/internal/logx"
-	"math/big"
 	"net/http"
 	"os"
 	"path/filepath"
 	"sync"
-	"time"
 
 	"github.com/google/uuid"
 )
@@ -54,57 +51,83 @@ func StartSRTToSpeakTask(srtText, voice, resourceID, rate string) string {
 		}
 
 		wd, _ := os.Getwd()
-		var processed []SRTSegment
+		var processed = make([]SRTSegment, total)
+		var jobs []TTSJob
+		segmentMap := make(map[int]SRTSegment)
 
-		for i, seg := range segments {
+		for _, seg := range segments {
+			segmentMap[seg.Index] = seg
+		}
+
+		// Phase 1: Filter cached segments vs cache misses (jobs)
+		for _, seg := range segments {
 			hash := md5HexStr(seg.Text + "_" + voice + "_" + resourceID + "_" + rate)
 			cachePath := filepath.Join(wd, "cache", hash+".mp3")
 			localURL := "http://127.0.0.1:5000/cache/" + hash + ".mp3"
 
-			// Check local cache first
 			if _, err := os.Stat(cachePath); err == nil {
 				logx.Info("SRT Task cache hit", "index", seg.Index, "hash", hash)
 				seg.AudioURL = localURL
-				processed = append(processed, seg)
-
-				percent := int(float64(i+1) / float64(total) * 100)
-				progress.Progress = percent
-				progress.Segments = processed
-				InFlightSrtTasks.Store(taskId, progress)
-				continue
-			}
-
-			// Cache miss - sleep to prevent rate-limit before requesting CapCut
-			if i > 0 {
-				jitter, _ := rand.Int(rand.Reader, big.NewInt(1000))
-				sleepTime := time.Duration(1500+jitter.Int64()) * time.Millisecond
-				logx.Info("SRT Task Sleep before next segment", "taskId", taskId, "index", seg.Index, "duration", sleepTime)
-				time.Sleep(sleepTime)
-			}
-
-			// Generate TTS for the segment
-			audioURL, err := GenerateTtsInternal(context.Background(), seg.Text, voice, resourceID, rate)
-			if err == nil {
-				// Save generated file to local cache
-				cachedURL, cacheErr := DownloadAndCacheAudio(audioURL, hash)
-				if cacheErr == nil {
-					seg.AudioURL = cachedURL
-				} else {
-					seg.AudioURL = audioURL
-				}
+				// Save immediately
+				processed[seg.Index-1] = seg
 			} else {
-				logx.Error("SRT Task segment generation failed", err, "taskId", taskId, "index", seg.Index)
+				jobs = append(jobs, TTSJob{
+					Index:      seg.Index,
+					Text:       seg.Text,
+					Voice:      voice,
+					ResourceID: resourceID,
+					Rate:       rate,
+					Hash:       hash,
+				})
 			}
-			processed = append(processed, seg)
+		}
 
-			// Update progress percentage
-			percent := int(float64(i+1) / float64(total) * 100)
-			progress.Progress = percent
-			progress.Segments = processed
+		// Store initially completed cached files count to accurately represent initial progress
+		initialCompleted := total - len(jobs)
+		if initialCompleted > 0 {
+			var currentProcessed []SRTSegment
+			for _, seg := range processed {
+				if seg.Index != 0 {
+					currentProcessed = append(currentProcessed, seg)
+				}
+			}
+			progress.Progress = int(float64(initialCompleted) / float64(total) * 100)
+			progress.Segments = currentProcessed
 			InFlightSrtTasks.Store(taskId, progress)
 		}
 
+		// Phase 2: Run worker pool for cache misses
+		if len(jobs) > 0 {
+			RunTTSWorkerPool(context.Background(), jobs, 5, func(comp int, tot int, res TTSJobResult) {
+				origSeg := segmentMap[res.Index]
+				if res.Error == nil {
+					cachedURL, cacheErr := DownloadAndCacheAudio(res.AudioURL, md5HexStr(origSeg.Text+"_"+voice+"_"+resourceID+"_"+rate))
+					if cacheErr == nil {
+						origSeg.AudioURL = cachedURL
+					} else {
+						origSeg.AudioURL = res.AudioURL
+					}
+				} else {
+					logx.Error("SRT Task segment generation failed", res.Error, "taskId", taskId, "index", res.Index)
+				}
+
+				processed[res.Index-1] = origSeg
+
+				// Update progress
+				var currentProcessed []SRTSegment
+				for _, seg := range processed {
+					if seg.Index != 0 {
+						currentProcessed = append(currentProcessed, seg)
+					}
+				}
+				progress.Progress = int(float64(initialCompleted+comp) / float64(total) * 100)
+				progress.Segments = currentProcessed
+				InFlightSrtTasks.Store(taskId, progress)
+			})
+		}
+
 		progress.Status = "succeed"
+		progress.Progress = 100
 		InFlightSrtTasks.Store(taskId, progress)
 		logx.Info("SRT Task completed successfully", "taskId", taskId)
 	}(taskId, srtText, voice, resourceID, rate)

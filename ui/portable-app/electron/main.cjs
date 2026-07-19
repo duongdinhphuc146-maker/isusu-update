@@ -5,6 +5,7 @@ const { spawn } = require('child_process');
 let mainWindow;
 let goProcess;
 let bridgeProcess;
+let openreelProcess;
 
 function startBackend() {
   const isDev = !app.isPackaged;
@@ -136,6 +137,46 @@ function startBackend() {
       fs.appendFileSync(logFile, `[BRIDGE EXIT] Code: ${code}, Signal: ${signal}\n`);
     });
   }
+
+  // Start OpenReel Video Editor (browser-based video editor)
+  const openreelDir = isDev
+    ? path.join(rootDir, 'openreel-video-temp/apps/web')
+    : path.join(rootDir, 'openreel-video-temp/apps/web');
+
+  console.log(`[ELECTRON] Spawning OpenReel Video from: ${openreelDir}`);
+  const { existsSync } = require('fs');
+  if (existsSync(openreelDir)) {
+    // Check if node_modules installed, if not skip (user must run pnpm install manually)
+    const openreelNodeModules = path.join(rootDir, 'openreel-video-temp/node_modules');
+    if (existsSync(openreelNodeModules)) {
+      // Use pnpm filter from monorepo root to start OpenReel dev server
+      openreelProcess = spawn('pnpm', ['--filter', '@openreel/web', 'dev', '--port', '5174'], {
+        cwd: path.join(rootDir, 'openreel-video-temp'),
+        shell: true,
+        windowsHide: true,
+        env: { ...process.env }
+      });
+      openreelProcess.stdout.on('data', (data) => {
+        fs.appendFileSync(logFile, `[OPENREEL STDOUT] ${data.toString()}`);
+      });
+      openreelProcess.stderr.on('data', (data) => {
+        fs.appendFileSync(logFile, `[OPENREEL STDERR] ${data.toString()}`);
+      });
+      openreelProcess.on('error', (err) => {
+        console.error('[ELECTRON] Failed to start OpenReel Video:', err);
+        fs.appendFileSync(logFile, `[OPENREEL ERROR] ${err.stack || err.message || err}\n`);
+      });
+      openreelProcess.on('exit', (code, signal) => {
+        fs.appendFileSync(logFile, `[OPENREEL EXIT] Code: ${code}, Signal: ${signal}\n`);
+      });
+    } else {
+      console.log('[ELECTRON] OpenReel node_modules not found — skipping auto-start. Run: cd openreel-video-temp && pnpm install');
+      fs.appendFileSync(logFile, '[OPENREEL] Skipped: node_modules not found\n');
+    }
+  } else {
+    console.log('[ELECTRON] OpenReel directory not found — skipping auto-start.');
+    fs.appendFileSync(logFile, '[OPENREEL] Skipped: directory not found\n');
+  }
 }
 
 function killProcesses() {
@@ -163,6 +204,18 @@ function killProcesses() {
       console.error('[ELECTRON] Error killing Bridge process:', e);
     }
     bridgeProcess = null;
+  }
+  if (openreelProcess) {
+    try {
+      if (process.platform === 'win32') {
+        spawn('taskkill', ['/pid', openreelProcess.pid, '/f', '/t'], { shell: true, windowsHide: true });
+      } else {
+        openreelProcess.kill('SIGINT');
+      }
+    } catch (e) {
+      console.error('[ELECTRON] Error killing OpenReel process:', e);
+    }
+    openreelProcess = null;
   }
 }
 

@@ -1,21 +1,27 @@
 package services
 
 import (
+	"encoding/json"
 	"go-backend/services/go-backend/internal/httpx"
 	"go-backend/services/go-backend/internal/logx"
 	"net/http"
+	"os"
+	"path/filepath"
 	"regexp"
 	"strconv"
 	"strings"
 )
 
 type SRTSegment struct {
-	Index      int     `json:"index"`
-	Start      string  `json:"start"`
-	End        string  `json:"end"`
-	DurationMs float64 `json:"duration_ms"`
-	Text       string  `json:"text"`
-	AudioURL   string  `json:"audio_url,omitempty"`
+	Index       int     `json:"index"`
+	Start       string  `json:"start"`
+	End         string  `json:"end"`
+	DurationMs  float64 `json:"duration_ms"`
+	StartSec    float64 `json:"start_sec"`
+	EndSec      float64 `json:"end_sec"`
+	DurationSec float64 `json:"duration_sec"`
+	Text        string  `json:"text"`
+	AudioURL    string  `json:"audio_url,omitempty"`
 }
 
 func ParseSRT(srtContent string) []SRTSegment {
@@ -42,16 +48,21 @@ func ParseSRT(srtContent string) []SRTSegment {
 
 		startStr := timeMatch[1]
 		endStr := timeMatch[2]
-		dur := parseSRTTime(endStr) - parseSRTTime(startStr)
+		startMs := parseSRTTime(startStr)
+		endMs := parseSRTTime(endStr)
+		dur := endMs - startMs
 		textLines := lines[2:]
 		text := strings.Join(textLines, " ")
 
 		segments = append(segments, SRTSegment{
-			Index:      index,
-			Start:      startStr,
-			End:        endStr,
-			DurationMs: dur,
-			Text:       text,
+			Index:       index,
+			Start:       startStr,
+			End:         endStr,
+			DurationMs:  dur,
+			StartSec:    startMs / 1000.0,
+			EndSec:      endMs / 1000.0,
+			DurationSec: dur / 1000.0,
+			Text:        text,
 		})
 	}
 	return segments
@@ -167,4 +178,14 @@ func HandleExportTranscript(w http.ResponseWriter, r *http.Request) {
 	default:
 		httpx.WriteError(w, "Invalid export format. Supported formats: txt, srt, json", http.StatusBadRequest)
 	}
+}
+
+func ExportMetadata(segments []SRTSegment, projectDir string) error {
+	_ = os.MkdirAll(projectDir, 0755)
+	filePath := filepath.Join(projectDir, "metadata.json")
+	data, err := json.MarshalIndent(segments, "", "  ")
+	if err != nil {
+		return err
+	}
+	return os.WriteFile(filePath, data, 0644)
 }

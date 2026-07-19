@@ -52,3 +52,29 @@ func TestBuildAndParseTranslationJSON(t *testing.T) {
 		t.Errorf("expected 'I want to', got '%s'", translated[1].TranslatedText)
 	}
 }
+
+func TestChunkSegmentsWithOverlap(t *testing.T) {
+	segments := []SRTSegment{
+		{Index: 1, Text: "S1"},
+		{Index: 2, Text: "S2"},
+		{Index: 3, Text: "S3"},
+		{Index: 4, Text: "S4"},
+		{Index: 5, Text: "S5"},
+	}
+
+	chunks := ChunkSegmentsWithOverlap(segments, 2, 1)
+	// Chunk 0: Core [S1, S2], Overlap []
+	// Chunk 1: Core [S3, S4], Overlap [S2]
+	// Chunk 2: Core [S5], Overlap [S4]
+	if len(chunks) != 3 {
+		t.Fatalf("expected 3 chunks, got %d", len(chunks))
+	}
+
+	if len(chunks[0].CoreSegments) != 2 || len(chunks[0].OverlapPrefix) != 0 {
+		t.Errorf("chunk 0 invalid")
+	}
+
+	if chunks[1].CoreSegments[0].Text != "S3" || chunks[1].OverlapPrefix[0].Text != "S2" {
+		t.Errorf("chunk 1 overlap mismatch: got %v", chunks[1])
+	}
+}

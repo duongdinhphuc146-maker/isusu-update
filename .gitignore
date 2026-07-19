@@ -7,6 +7,9 @@ node_modules/
 jspm_packages/
 web_modules/
 
+# Python runtime & packages (too large for git)
+python/
+
 # Build outputs
 dist/
 dist-electron/
@@ -15,12 +18,31 @@ bin/
 capcut-studio-portable/
 *.exe
 
+# Compiled binaries
+*.dll
+*.pyd
+*.so
+*.dylib
+
 # Cache and User Data
 cache/
 user_data/
 *.log
 backend-log.txt
 
+# Project data (user-generated)
+projects/
+openreel-video-temp/
+
 # OS metadata
 .DS_Store
 Thumbs.db
+
+# IDE
+.vscode/
+
+# Large media/temp files
+*.png
+*.jpg
+*.jpeg
+gemini-*.png

@@ -38,9 +38,8 @@ var InFlightTts sync.Map // maps hash string -> context.CancelFunc
 
 
 
-func GenerateTtsInternal(ctx context.Context, text, voice, resourceID, rateStr string) (string, error) {
+func GenerateTtsInternal(ctx context.Context, text, voice, resourceID, rateStr string, device DeviceInfo) (string, error) {
 	logx.Info("Starting TTS generation", "text", text, "voice", voice, "rate", rateStr)
-	device := GetDynamicDevice()
 
 	jitter, _ := rand.Int(rand.Reader, big.NewInt(600))
 	select {
@@ -199,9 +198,13 @@ func HandleTTS(w http.ResponseWriter, r *http.Request) {
 	var audioURL string
 	var err error
 	for attempt := 1; attempt <= 3; attempt++ {
-		audioURL, err = GenerateTtsInternal(ctx, req.Text, req.Voice, req.ResourceID, req.Rate)
+		device := GetNextDevice()
+		audioURL, err = GenerateTtsInternal(ctx, req.Text, req.Voice, req.ResourceID, req.Rate, device)
 		if err == nil {
 			break
+		}
+		if strings.Contains(err.Error(), "429") {
+			MarkDeviceCooldown(device.DeviceID, 15*time.Minute)
 		}
 		if ctx.Err() != nil {
 			break

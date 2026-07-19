@@ -4,14 +4,44 @@ import { PROVIDERS } from './providers/configs';
 import { getCapturedSessionInfo, deleteCapturedSession } from './session-manager';
 import { startCapture, stopCapture } from './request-capture';
 import { replayRequest } from './request-replay';
+import { replayOCRRequest } from './ocr-replay';
 
 const app = express();
 const port = process.env.PORT || 5001;
 
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: '50mb' }));
 
-// Start capturing requests for a provider
+export let ocrProgress = {
+  status: 'idle',
+  current: 0,
+  total: 0,
+  message: '',
+  log: [] as string[]
+};
+
+export function updateOcrProgress(message: string, current = 0, total = 0, status = 'processing') {
+  ocrProgress.status = status;
+  ocrProgress.current = current;
+  ocrProgress.total = total;
+  ocrProgress.message = message;
+  if (message) {
+    ocrProgress.log.push(`[${new Date().toLocaleTimeString()}] ${message}`);
+  }
+}
+
+export function clearOcrProgressLog() {
+  ocrProgress.status = 'idle';
+  ocrProgress.current = 0;
+  ocrProgress.total = 0;
+  ocrProgress.message = '';
+  ocrProgress.log = [];
+}
+
+app.get('/ocr/progress', (req, res) => {
+  res.json(ocrProgress);
+});
+
 app.post('/capture/start', async (req, res, next) => {
   const { provider } = req.body;
   if (!provider) {
@@ -27,7 +57,6 @@ app.post('/capture/start', async (req, res, next) => {
   }
 });
 
-// Stop capturing and save the template
 app.post('/capture/stop', async (req, res, next) => {
   try {
     console.log('[SERVER] Stopping capture...');
@@ -38,7 +67,6 @@ app.post('/capture/stop', async (req, res, next) => {
   }
 });
 
-// Replay a captured request with a new prompt
 app.post('/replay', async (req, res, next) => {
   const { provider, prompt } = req.body;
   if (!provider || !prompt) {
@@ -54,17 +82,30 @@ app.post('/replay', async (req, res, next) => {
   }
 });
 
-// List all active sessions
+app.post('/ocr/replay', async (req, res, next) => {
+  const { provider, image } = req.body;
+  if (!provider || !image) {
+    res.status(400).json({ error: 'Provider and image are required' });
+    return;
+  }
+  try {
+    console.log(`[SERVER] Replaying OCR request for ${provider}...`);
+    const imageBuffer = Buffer.from(image, 'base64');
+    const resultText = await replayOCRRequest(provider, imageBuffer);
+    res.json({ response: resultText });
+  } catch (err) {
+    next(err);
+  }
+});
+
 app.get('/sessions', (req, res) => {
   const sessionsInfo = PROVIDERS.map(p => {
     const info = getCapturedSessionInfo(p.id);
-    if (info) return info;
-    return { provider: p.id, capturedAt: '', status: 'unknown' };
+    return info ? info : { provider: p.id, capturedAt: '', status: 'unknown' };
   });
   res.json(sessionsInfo);
 });
 
-// Delete a provider's captured session
 app.delete('/sessions/:provider', (req, res) => {
   const { provider } = req.params;
   try {
@@ -76,12 +117,10 @@ app.delete('/sessions/:provider', (req, res) => {
   }
 });
 
-// Health check endpoint
 app.get('/health', (req, res) => {
   res.json({ status: 'healthy' });
 });
 
-// Error handling middleware
 app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
   console.error('[SERVER ERROR]', err);
   res.status(500).json({ error: err.message });

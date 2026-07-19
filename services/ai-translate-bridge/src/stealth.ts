@@ -2,13 +2,10 @@ import { Page, BrowserContext } from 'playwright';
 
 export const STEALTH_LAUNCH_ARGS = [
   '--disable-blink-features=AutomationControlled',
-  '--disable-infobars',
   '--lang=vi-VN,vi,en-US,en',
-  '--no-sandbox',
-  '--disable-setuid-sandbox',
-  '--disable-web-security',
-  '--disable-features=IsolateOrigins,site-per-process',
-  '--disable-site-isolation-trials'
+  '--hide-crash-restore-bubble',
+  '--no-first-run',
+  '--no-default-browser-check'
 ];
 
 export async function applyStealth(pageOrContext: Page | BrowserContext): Promise<void> {
@@ -16,8 +13,10 @@ export async function applyStealth(pageOrContext: Page | BrowserContext): Promis
     await pageOrContext.addInitScript(() => {
       // 1. Hide webdriver property on navigator
       try {
-        const newProto = Object.getPrototypeOf(navigator);
-        delete (newProto as any).webdriver;
+        Object.defineProperty(navigator, 'webdriver', {
+          get: () => undefined,
+          configurable: true
+        });
       } catch (e) {}
 
       // 2. Mock chrome object with realistic API surfaces
@@ -60,14 +59,17 @@ export async function applyStealth(pageOrContext: Page | BrowserContext): Promis
         });
       } catch (e) {}
 
-      // 4. Override userAgentData
+      // 4. Override userAgentData dynamically
       try {
+        const ua = navigator.userAgent;
+        const match = ua.match(/Chrome\/(\d+)/);
+        const chromeVersion = match ? match[1] : '124';
         Object.defineProperty(navigator, 'userAgentData', {
           get: () => ({
             brands: [
-              { brand: 'Not(A:Brand', version: '99' },
-              { brand: 'Google Chrome', version: '122' },
-              { brand: 'Chromium', version: '122' }
+              { brand: 'Not/A)Brand', version: '8' },
+              { brand: 'Google Chrome', version: chromeVersion },
+              { brand: 'Chromium', version: chromeVersion }
             ],
             mobile: false,
             platform: 'Windows'

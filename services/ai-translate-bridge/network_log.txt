@@ -1,0 +1,187 @@
+=== Network Log ===
+[REQ] GET | https://ocr.z.ai/
+Headers: {"upgrade-insecure-requests":"1","user-agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/149.0.0.0 Safari/537.36","sec-ch-ua":"\"Google Chrome\";v=\"149\", \"Chromium\";v=\"149\", \"Not)A;Brand\";v=\"24\"","sec-ch-ua-mobile":"?0","sec-ch-ua-platform":"\"Windows\""}
+Body: 
+
+[REQ] GET | https://ocr.z.ai/assets/index-DoDt8jpk.js
+Headers: {"origin":"https://ocr.z.ai","sec-ch-ua-platform":"\"Windows\"","referer":"https://ocr.z.ai/","user-agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/149.0.0.0 Safari/537.36","sec-ch-ua":"\"Google Chrome\";v=\"149\", \"Chromium\";v=\"149\", \"Not)A;Brand\";v=\"24\"","sec-ch-ua-mobile":"?0"}
+Body: 
+
+[REQ] GET | https://ocr.z.ai/assets/index-BT9Qrz72.css
+Headers: {"origin":"https://ocr.z.ai","sec-ch-ua-platform":"\"Windows\"","referer":"https://ocr.z.ai/","user-agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/149.0.0.0 Safari/537.36","sec-ch-ua":"\"Google Chrome\";v=\"149\", \"Chromium\";v=\"149\", \"Not)A;Brand\";v=\"24\"","sec-ch-ua-mobile":"?0"}
+Body: 
+
+[REQ] GET | https://ocr.z.ai/manifest.json
+Headers: {"sec-ch-ua-platform":"\"Windows\"","referer":"https://ocr.z.ai/","user-agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/149.0.0.0 Safari/537.36","sec-ch-ua":"\"Google Chrome\";v=\"149\", \"Chromium\";v=\"149\", \"Not)A;Brand\";v=\"24\"","sec-ch-ua-mobile":"?0"}
+Body: 
+
+[RESP] https://ocr.z.ai/ | Status: 200
+Response: <!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<link rel="icon" href="/favicon.ico" />
+		<meta name="theme-color" content="#000000" />
+		<meta name="description" content="Web site created using create-tsrouter-app" />
+		<link rel="apple-touch-icon" href="/logo192.png" />
+		<link rel="manifest" href="/manifest.json" />
+		<title>Free & accurate OCR powered by GLM-OCR</title>
+		<script type="module" crossorigin src="/assets/index-DoDt8jpk.js"></script>
+		<link rel="stylesheet" crossorigin href="/assets/index-BT9Qrz72.css">
+	</head>
+	<body>
+		<div id="app"></div>
+	</body>
+</html>
+
+
+[RESP] https://ocr.z.ai/assets/index-BT9Qrz72.css | Status: 200
+Response: @layer properties{@supports (((-webkit-hyphens:none)) and (not (margin-trim:inline))) or ((-moz-orient:inline) and (not (color:rgb(from red r g b)))){*,:before,:after,::backdrop{--tw-translate-x:0;--tw-translate-y:0;--tw-translate-z:0;--tw-rotate-x:initial;--tw-rotate-y:initial;--tw-rotate-z:initial;--tw-skew-x:initial;--tw-skew-y:initial;--tw-space-y-reverse:0;--tw-space-x-reverse:0;--tw-border-style:solid;--tw-leading:initial;--tw-font-weight:initial;--tw-shadow:0 0 #0000;--tw-shadow-color:initial;--tw-shadow-alpha:100%;--tw-inset-shadow:0 0 #0000;--tw-inset-shadow-color:initial;--tw-inset-shadow-alpha:100%;--tw-ring-color:initial;--tw-ring-shadow:0 0 #0000;--tw-inset-ring-color:initial;--tw-inset-ring-shadow:0 0 #0000;--tw-ring-inset:initial;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-offset-shadow:0 0 #0000;--tw-outline-style:solid;--tw-backdrop-blur:initial;--tw-backdrop-brightness:initial;--tw-backdrop-contrast:initial;--tw-backdrop-grayscale:initial;--tw-bac
+
+[RESP] https://ocr.z.ai/manifest.json | Status: 200
+Response: {
+  "short_name": "TanStack App",
+  "name": "Create TanStack App Sample",
+  "icons": [
+    {
+      "src": "favicon.ico",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/x-icon"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#000000",
+  "background_color": "#ffffff"
+}
+
+
+[RESP] https://ocr.z.ai/assets/index-DoDt8jpk.js | Status: 200
+Response: const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["assets/index-CMcbtG27.js","assets/OCRResults-Bk66QHgs.js","assets/OCRResults-jGEEa2G-.css","assets/_shareId-DFSoZd9Q.js"])))=>i.map(i=>d[i]);
+function nS(a,i){for(var s=0;s<i.length;s++){const r=i[s];if(typeof r!="string"&&!Array.isArray(r)){for(const l in r)if(l!=="default"&&!(l in a)){const c=Object.getOwnPropertyDescriptor(r,l);c&&Object.defineProperty(a,l,c.get?c:{enumerable:!0,get:()=>r[l]})}}}return Object.freeze(Object.defineProperty(a,Symbol.toStringTag,{value:"Module"}))}(function(){const i=document.createElement("link").relList;if(i&&i.supports&&i.supports("modulepreload"))return;for(const l of document.querySelectorAll('link[rel="modulepreload"]'))r(l);new MutationObserver(l=>{for(const c of l)if(c.type==="childList")for(const d of c.addedNodes)d.tagName==="LINK"&&d.rel==="modulepreload"&&r(d)}).observe(document,{childList:!0,subtree:!0});function s(l){const c={};return l.integrity&&(c.integrity=l.integrity),l.referre
+
+[REQ] GET | https://ocr.z.ai/assets/index-CMcbtG27.js
+Headers: {"origin":"https://ocr.z.ai","sec-ch-ua-platform":"\"Windows\"","referer":"","user-agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/149.0.0.0 Safari/537.36","sec-ch-ua":"\"Google Chrome\";v=\"149\", \"Chromium\";v=\"149\", \"Not)A;Brand\";v=\"24\"","sec-ch-ua-mobile":"?0"}
+Body: 
+
+[REQ] GET | https://ocr.z.ai/assets/OCRResults-Bk66QHgs.js
+Headers: {"origin":"https://ocr.z.ai","sec-ch-ua-platform":"\"Windows\"","referer":"","user-agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/149.0.0.0 Safari/537.36","sec-ch-ua":"\"Google Chrome\";v=\"149\", \"Chromium\";v=\"149\", \"Not)A;Brand\";v=\"24\"","sec-ch-ua-mobile":"?0"}
+Body: 
+
+[REQ] GET | https://ocr.z.ai/assets/OCRResults-jGEEa2G-.css
+Headers: {"origin":"https://ocr.z.ai","sec-ch-ua-platform":"\"Windows\"","referer":"https://ocr.z.ai/","user-agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/149.0.0.0 Safari/537.36","sec-ch-ua":"\"Google Chrome\";v=\"149\", \"Chromium\";v=\"149\", \"Not)A;Brand\";v=\"24\"","sec-ch-ua-mobile":"?0"}
+Body: 
+
+[RESP] https://ocr.z.ai/assets/OCRResults-jGEEa2G-.css | Status: 200
+Response: :root{--react-pdf-annotation-layer: 1;--annotation-unfocused-field-background: url("data:image/svg+xml;charset=UTF-8,<svg width='1px' height='1px' xmlns='http://www.w3.org/2000/svg'><rect width='100%' height='100%' style='fill:rgba(0, 54, 255, 0.13);'/></svg>");--input-focus-border-color: Highlight;--input-focus-outline: 1px solid Canvas;--input-unfocused-border-color: transparent;--input-disabled-border-color: transparent;--input-hover-border-color: black;--link-outline: none}@media screen and (forced-colors:active){:root{--input-focus-border-color: CanvasText;--input-unfocused-border-color: ActiveText;--input-disabled-border-color: GrayText;--input-hover-border-color: Highlight;--link-outline: 1.5px solid LinkText}.annotationLayer .textWidgetAnnotation :is(input,textarea):required,.annotationLayer .choiceWidgetAnnotation select:required,.annotationLayer .buttonWidgetAnnotation:is(.checkBox,.radioButton) input:required{outline:1.5px solid selectedItem}.annotationLayer .linkAnnotation:
+
+[RESP] https://ocr.z.ai/assets/index-CMcbtG27.js | Status: 200
+Response: import{c as ge,a as dt,j as s,S as ft,b as M,r as i,u as Ee,d as ne,e as pe,g as xt,L as ve,f as vt,h as mt,t as ee,i as oe,I as gt,p as pt,k as ht}from"./index-DoDt8jpk.js";import{P as H,u as yt,c as bt,a as ie,b as he,d as $,e as St,f as Et,D as Ct,g as wt,_ as kt,T as _t,h as Nt,i as jt,j as Dt,F as Rt,O as Tt}from"./OCRResults-Bk66QHgs.js";const At=[["path",{d:"M10 11v6",key:"nco0om"}],["path",{d:"M14 11v6",key:"outv1u"}],["path",{d:"M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6",key:"miytrc"}],["path",{d:"M3 6h18",key:"d0wm0j"}],["path",{d:"M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2",key:"e791ji"}]],Ot=ge("trash-2",At);const Mt=[["path",{d:"M12 3v12",key:"1x0j5s"}],["path",{d:"m17 8-5-5-5 5",key:"7q97r8"}],["path",{d:"M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4",key:"ih7n3h"}]],Pt=ge("upload",Mt);const It=[["path",{d:"M18 6 6 18",key:"1bl5f8"}],["path",{d:"m6 6 12 12",key:"d8bk6v"}]],Ft=ge("x",It),Ce=e=>typeof e=="boolean"?`${e}`:e===0?"0":e,we=dt,Lt=(e,t)=>n=>{var r;if(t?.variants==null)ret
+
+[RESP] https://ocr.z.ai/assets/OCRResults-Bk66QHgs.js | Status: 200
+Response: var ig=t=>{throw TypeError(t)};var Dl=(t,e,n)=>e.has(t)||ig("Cannot "+n);var st=(t,e,n)=>(Dl(t,e,"read from private field"),n?n.call(t):e.get(t)),Fn=(t,e,n)=>e.has(t)?ig("Cannot add the same private member more than once"):e instanceof WeakSet?e.add(t):e.set(t,n),Xt=(t,e,n,r)=>(Dl(t,e,"write to private field"),r?r.call(t,n):e.set(t,n),n),Bn=(t,e,n)=>(Dl(t,e,"access private method"),n);var sg=(t,e,n,r)=>({set _(a){Xt(t,e,a,n)},get _(){return st(t,e,r)}});import{c as da,r as N,j as I,m as dA,n as Vt,d as er,o as pE,u as ls,q as fE,s as Fr,v as hA,b as us,w as pA,x as xc,y as et,a as Uo,e as _c,z as mE,t as To,L as fA,A as mA}from"./index-DoDt8jpk.js";const gA=[["path",{d:"m15 18-6-6 6-6",key:"1wnfg3"}]],bA=da("chevron-left",gA);const EA=[["path",{d:"m9 18 6-6-6-6",key:"mthhwq"}]],yA=da("chevron-right",EA);const TA=[["rect",{width:"14",height:"14",x:"8",y:"8",rx:"2",ry:"2",key:"17jyea"}],["path",{d:"M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2",key:"zix9uf"}]],gE=da("copy",TA);
+
+[REQ] GET | https://ocr.z.ai/api/v1/z-ocr/auth/
+Headers: {"x-request-id":"c6f18689-7238-422c-9886-c231cab7bfda","sec-ch-ua-platform":"\"Windows\"","referer":"https://ocr.z.ai/","accept-language":"en","sec-ch-ua":"\"Google Chrome\";v=\"149\", \"Chromium\";v=\"149\", \"Not)A;Brand\";v=\"24\"","sec-ch-ua-mobile":"?0","user-agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/149.0.0.0 Safari/537.36","accept":"application/json, text/plain, */*"}
+Body: 
+
+[REQ] GET | https://chat.z.ai/api/oauth/authorize?client_id=client_AWMyELh5Radi8O4B4VKt4w&redirect_uri=https%3A%2F%2Focr.z.ai%2F&response_type=code&state=euf_1DzauGlKL7JGT5TK_w%3D%3D
+Headers: {"referer":"https://ocr.z.ai/","upgrade-insecure-requests":"1","user-agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/149.0.0.0 Safari/537.36","sec-ch-ua":"\"Google Chrome\";v=\"149\", \"Chromium\";v=\"149\", \"Not)A;Brand\";v=\"24\"","sec-ch-ua-mobile":"?0","sec-ch-ua-platform":"\"Windows\""}
+Body: 
+
+[REQ] GET | https://chat.z.ai/auth?response_type=code&client_id=client_AWMyELh5Radi8O4B4VKt4w&redirect_uri=https%3A%2F%2Focr.z.ai%2F&state=euf_1DzauGlKL7JGT5TK_w%3D%3D
+Headers: {"referer":"https://ocr.z.ai/","upgrade-insecure-requests":"1","user-agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/149.0.0.0 Safari/537.36","sec-ch-ua":"\"Google Chrome\";v=\"149\", \"Chromium\";v=\"149\", \"Not)A;Brand\";v=\"24\"","sec-ch-ua-mobile":"?0","sec-ch-ua-platform":"\"Windows\""}
+Body: 
+
+[RESP] https://chat.z.ai/api/oauth/authorize?client_id=client_AWMyELh5Radi8O4B4VKt4w&redirect_uri=https%3A%2F%2Focr.z.ai%2F&response_type=code&state=euf_1DzauGlKL7JGT5TK_w%3D%3D | Status: 307
+Response: 
+
+[RESP] https://ocr.z.ai/api/v1/z-ocr/auth/ | Status: 200
+Response: 
+
+[RESP] https://chat.z.ai/auth?response_type=code&client_id=client_AWMyELh5Radi8O4B4VKt4w&redirect_uri=https%3A%2F%2Focr.z.ai%2F&state=euf_1DzauGlKL7JGT5TK_w%3D%3D | Status: 200
+Response: <!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<link
+			rel="icon"
+			type="image/png"
+			sizes="512x512"
+			href="https://z-cdn.chatglm.cn/z-ai/static/logo.svg"
+		/>
+		<link rel="shortcut icon" href="https://z-cdn.chatglm.cn/z-ai/static/logo.svg" />
+		<link
+			rel="apple-touch-icon"
+			sizes="512x512"
+			href="https://z-cdn.chatglm.cn/z-ai/static/logo.svg"
+		/>
+		<meta
+			name="apple-mobile-web-app-title"
+			content="Z.ai - Advanced AI Chatbot & Agent powered by GLM-5.2"
+		/>
+		<meta
+			name="description"
+			content="Meet Z.ai, the AI assistant powered by GLM-5.2. Build websites, write code, handle long-horizon tasks, and get instant answers. Fast, smart, and reliable."
+		/>
+		<meta
+			name="keywords"
+			content="GLM-4.6, GLM 4.6, GLM-4.6-Air, GLM 4.6 Air, GLM 4.5, GLM4.5, GLM4.6, Deep Research, z ai, z.ai, GLM 4.5 AI, GLM 4.6 AI, GLM AI, Chat Z, zai, Chat AI, GLM, z.ia, Chat Z AI, AI chat, chatbot, z.ai chat, free ai chat, free AI, free ai chat no login, GLM-4.
+
+[REQ] POST | https://www.google.com/measurement/conversion?random=1782751520470&cv=11&tid=G-Z8QTHYBHP3&fst=1782751520470&fmt=8&en=first_visit&gtm=45je66p0v9218837095za200zd9218837095xec&gcd=13l3l3l3l1l1&dma=0&tag_exp=115616986~115938466~115938468~119027224~119576891~119576895&u_w=800&u_h=600&url=https%3A%2F%2Fchat.z.ai%2Fauth%3Fresponse_type%3Dcode%26client_id%3Dclient_AWMyELh5Radi8O4B4VKt4w%26redirect_uri%3Dhttps%253A%252F%252Focr.z.ai%252F%26state%3Deuf_1DzauGlKL7JGT5TK_w%253D%253D&ref=https%3A%2F%2Focr.z.ai%2F&gacid=352254528.1782751520&frm=0&tiba=Z.ai%20-%20Advanced%20AI%20Chatbot%20%26%20Agent%20powered%20by%20GLM-5.2&gtm_ee=1&npa=0&pscdl=noapi&auid=116290914.1782751520&uaa=x86&uab=64&uafvl=Google%2520Chrome%3B149.0.7827.115%7CChromium%3B149.0.7827.115%7CNot)A%253BBrand%3B24.0.0.0&uamb=0&uam=&uap=Windows&uapv=15.0.0&uaw=0&rcb=4
+Headers: {"sec-ch-ua-platform":"\"Windows\"","referer":"","user-agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/149.0.0.0 Safari/537.36","sec-ch-ua":"\"Google Chrome\";v=\"149\", \"Chromium\";v=\"149\", \"Not)A;Brand\";v=\"24\"","sec-ch-ua-mobile":"?0"}
+Body: 
+
+[REQ] POST | https://analytics.google.com/g/collect?v=2&tid=G-Z8QTHYBHP3&gtm=45je66p0v9218837095za200zd9218837095&_p=1782751519898&_gaz=1&gcd=13l3l3l3l1l1&npa=0&dma=0&_eu=AAAAAGAC&_prs=ok&are=1&cid=352254528.1782751520&frm=0&pscdl=noapi&rcb=4&sr=800x600&uaa=x86&uab=64&uafvl=Google%2520Chrome%3B149.0.7827.115%7CChromium%3B149.0.7827.115%7CNot)A%253BBrand%3B24.0.0.0&uam=&uamb=0&uap=Windows&uapv=15.0.0&uaw=0&ul=en-us&gaf=2&_s=1&tag_exp=115616986~115938466~115938468~119027224~119576891~119576895&sid=1782751520&sct=1&seg=0&dl=https%3A%2F%2Fchat.z.ai%2Fauth%3Fresponse_type%3Dcode%26client_id%3Dclient_AWMyELh5Radi8O4B4VKt4w%26redirect_uri%3Dhttps%253A%252F%252Focr.z.ai%252F%26state%3Deuf_1DzauGlKL7JGT5TK_w%253D%253D&dr=https%3A%2F%2Focr.z.ai%2F&dt=Z.ai%20-%20Advanced%20AI%20Chatbot%20%26%20Agent%20powered%20by%20GLM-5.2&en=page_view&_fv=2&_nsi=1&_ss=1&_ee=1&tfd=902
+Headers: {"sec-ch-ua-platform":"\"Windows\"","referer":"","user-agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/149.0.0.0 Safari/537.36","sec-ch-ua":"\"Google Chrome\";v=\"149\", \"Chromium\";v=\"149\", \"Not)A;Brand\";v=\"24\"","sec-ch-ua-mobile":"?0"}
+Body: 
+
+[REQ] GET | https://chat.z.ai/api/v1/auths/
+Headers: {"sec-ch-ua-platform":"\"Windows\"","referer":"","accept-language":"en-US","sec-ch-ua":"\"Google Chrome\";v=\"149\", \"Chromium\";v=\"149\", \"Not)A;Brand\";v=\"24\"","sec-ch-ua-mobile":"?0","user-agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/149.0.0.0 Safari/537.36","accept":"application/json","content-type":"application/json"}
+Body: 
+
+[REQ] GET | https://chat.z.ai/api/config
+Headers: {"sec-ch-ua-platform":"\"Windows\"","referer":"","accept-language":"en-US","sec-ch-ua":"\"Google Chrome\";v=\"149\", \"Chromium\";v=\"149\", \"Not)A;Brand\";v=\"24\"","sec-ch-ua-mobile":"?0","user-agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/149.0.0.0 Safari/537.36","accept":"application/json","content-type":"application/json"}
+Body: 
+
+[RESP] https://chat.z.ai/api/config | Status: 200
+Response: {"status":true,"name":"Z","version":"0.0.0","default_locale":"","oauth":{"providers":{"google":"google","github":"github","maas":"maas"}},"completion_version":"2","default_ppt_model":"0702-RL-API","features":{"auth":true,"auth_trusted_header":false,"enable_ldap":false,"enable_api_key":false,"enable_signup":true,"enable_login_form":true,"enable_websocket":false,"enable_upload_image":false,"enable_artifacts_mode":true,"enable_mcp":true,"enable_captcha":true},"default_models":"GLM-5.1","mcp_servers":[{"name":"deep-web-search","title":"Web Search","title_zh":"全网搜索","title_en":"Web Search","description":"用于操作浏览器进行深度网络搜索","icon_name":"search"},{"name":"ppt-maker","title":"Slides Maker","title_zh":"PPT 制作","title_en":"Slides Maker","description":"Embrace the Vibe, Elevate Your Slides!","icon_name":"presentation"},{"name":"vibe-coding","title":"Workspace","title_zh":"工作空间","title_en":"Workspace","description":"普普通通的vibe","icon_name":"workspace"},{"name":"image-search","title":"Image Search","t
+
+[REQ] GET | https://www.google.com/measurement/1p-conversion/?random=234270846&cv=11&tid=G-Z8QTHYBHP3&fst=1782751520470&fmt=8&en=first_visit&gtm=45je66p0v9218837095za200zd9218837095xec&gcd=13l3l3l3l1l1&dma=0&tag_exp=115616986~115938466~115938468~119027224~119576891~119576895&u_w=800&u_h=600&url=https%3A%2F%2Fchat.z.ai%2Fauth%3Fresponse_type%3Dcode%26client_id%3Dclient_AWMyELh5Radi8O4B4VKt4w%26redirect_uri%3Dhttps%253A%252F%252Focr.z.ai%252F%26state%3Deuf_1DzauGlKL7JGT5TK_w%253D%253D&ref=https%3A%2F%2Focr.z.ai%2F&gacid=352254528.1782751520&frm=0&tiba=Z.ai%20-%20Advanced%20AI%20Chatbot%20%26%20Agent%20powered%20by%20GLM-5.2&gtm_ee=1&npa=0&pscdl=noapi&auid=116290914.1782751520&uaa=x86&uab=64&uafvl=Google%2520Chrome%3B149.0.7827.115%7CChromium%3B149.0.7827.115%7CNot)A%253BBrand%3B24.0.0.0&uamb=0&uam=&uap=Windows&uapv=15.0.0&uaw=0&rcb=4&ct_cookie_present=false&crd=CLTesQII8t-xAgit4bECCK_hsQIIobixAgixwbECCLDBsQIIscOxAgiKxbECCMLJsQIItMaxAgiT2rECCNvcsQIIh9uxAgjTxbECCOvMsQII7c6xAgjVz7ECCPTasQII_eOxAgjL47ECCK7lsQIIyeOxAgiX1LECCMnbsQIIzeaxAgix4bECCLPhsQIIpt2xAgiw3rECCIDbsQI&cerd=CgEA&fsk=ChEI8K-I0gYQ9bfE7MXDuZWhARIsAFGWD_WKMz5M-0Jb0ERp4s65vBbzsIHCISHKLB_jW9c_8-uSezDXQ9aqXYkaAsIS&pscrd=IhMIreW9vvKslQMVe_BMAh3d4wHmQlhDaEVJOEstSTBnWVEyZnVraDVXeTZOSE5BUkl0QUpMa083VXV1TGw4WjhzY3NDNVdyNEpyY01vSVhhcTFYcTFBZFNjQldJejQ3QmJ0MUJaNnREY3ZlMERHegwICWIICAAQABgAIAA
+Headers: {"user-agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/149.0.0.0 Safari/537.36","referer":""}
+Body: 
+
+[RESP] https://www.google.com/measurement/conversion?random=1782751520470&cv=11&tid=G-Z8QTHYBHP3&fst=1782751520470&fmt=8&en=first_visit&gtm=45je66p0v9218837095za200zd9218837095xec&gcd=13l3l3l3l1l1&dma=0&tag_exp=115616986~115938466~115938468~119027224~119576891~119576895&u_w=800&u_h=600&url=https%3A%2F%2Fchat.z.ai%2Fauth%3Fresponse_type%3Dcode%26client_id%3Dclient_AWMyELh5Radi8O4B4VKt4w%26redirect_uri%3Dhttps%253A%252F%252Focr.z.ai%252F%26state%3Deuf_1DzauGlKL7JGT5TK_w%253D%253D&ref=https%3A%2F%2Focr.z.ai%2F&gacid=352254528.1782751520&frm=0&tiba=Z.ai%20-%20Advanced%20AI%20Chatbot%20%26%20Agent%20powered%20by%20GLM-5.2&gtm_ee=1&npa=0&pscdl=noapi&auid=116290914.1782751520&uaa=x86&uab=64&uafvl=Google%2520Chrome%3B149.0.7827.115%7CChromium%3B149.0.7827.115%7CNot)A%253BBrand%3B24.0.0.0&uamb=0&uam=&uap=Windows&uapv=15.0.0&uaw=0&rcb=4 | Status: 302
+Response: 
+
+[REQ] GET | https://chat.z.ai/api/models
+Headers: {"sec-ch-ua-platform":"\"Windows\"","referer":"","accept-language":"en-US","sec-ch-ua":"\"Google Chrome\";v=\"149\", \"Chromium\";v=\"149\", \"Not)A;Brand\";v=\"24\"","sec-ch-ua-mobile":"?0","user-agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/149.0.0.0 Safari/537.36","accept":"application/json","content-type":"application/json"}
+Body: 
+
+[REQ] POST | https://chat.z.ai/api/v1/users/user/settings/update
+Headers: {"sec-ch-ua-platform":"\"Windows\"","authorization":"Bearer eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImJkNGRmZTIyLTc5OGQtNDdjMi04Mjc3LTI5YWI2NzkwNzZjMCIsImVtYWlsIjoiZ3Vlc3QtMTc4Mjc1MTM5ODIyMEBndWVzdC5jb20ifQ.ayKezSDEdqIiVQgshOrmhKalA5KushoIx33v0b5cv2Xht3vBPM-v2otJ1_mnoopBgdIozpAO1LMv81UXZB1KGQ","referer":"","user-agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/149.0.0.0 Safari/537.36","sec-ch-ua":"\"Google Chrome\";v=\"149\", \"Chromium\";v=\"149\", \"Not)A;Brand\";v=\"24\"","content-type":"application/json","sec-ch-ua-mobile":"?0"}
+Body: {"ui":{"timezone":"Asia/Saigon"}}
+
+[RESP] https://analytics.google.com/g/collect?v=2&tid=G-Z8QTHYBHP3&gtm=45je66p0v9218837095za200zd9218837095&_p=1782751519898&_gaz=1&gcd=13l3l3l3l1l1&npa=0&dma=0&_eu=AAAAAGAC&_prs=ok&are=1&cid=352254528.1782751520&frm=0&pscdl=noapi&rcb=4&sr=800x600&uaa=x86&uab=64&uafvl=Google%2520Chrome%3B149.0.7827.115%7CChromium%3B149.0.7827.115%7CNot)A%253BBrand%3B24.0.0.0&uam=&uamb=0&uap=Windows&uapv=15.0.0&uaw=0&ul=en-us&gaf=2&_s=1&tag_exp=115616986~115938466~115938468~119027224~119576891~119576895&sid=1782751520&sct=1&seg=0&dl=https%3A%2F%2Fchat.z.ai%2Fauth%3Fresponse_type%3Dcode%26client_id%3Dclient_AWMyELh5Radi8O4B4VKt4w%26redirect_uri%3Dhttps%253A%252F%252Focr.z.ai%252F%26state%3Deuf_1DzauGlKL7JGT5TK_w%253D%253D&dr=https%3A%2F%2Focr.z.ai%2F&dt=Z.ai%20-%20Advanced%20AI%20Chatbot%20%26%20Agent%20powered%20by%20GLM-5.2&en=page_view&_fv=2&_nsi=1&_ss=1&_ee=1&tfd=902 | Status: 204
+Response: 
+
+[RESP] https://chat.z.ai/api/v1/auths/ | Status: 200
+Response: {"id":"bd4dfe22-798d-47c2-8277-29ab679076c0","email":"guest-1782751398220@guest.com","name":"Guest-1782751398220","role":"guest","profile_image_url":"/user.png","idp":"z.ai","phone_num":null,"token":"eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImJkNGRmZTIyLTc5OGQtNDdjMi04Mjc3LTI5YWI2NzkwNzZjMCIsImVtYWlsIjoiZ3Vlc3QtMTc4Mjc1MTM5ODIyMEBndWVzdC5jb20ifQ.ayKezSDEdqIiVQgshOrmhKalA5KushoIx33v0b5cv2Xht3vBPM-v2otJ1_mnoopBgdIozpAO1LMv81UXZB1KGQ","token_type":"Bearer","expires_at":null,"permissions":{"workspace":{"models":false,"knowledge":false,"prompts":false,"tools":false},"sharing":{"public_models":false,"public_knowledge":false,"public_prompts":false,"public_tools":false},"chat":{"temporary":true,"temporary_enforced":true},"features":{"direct_tool_servers":false,"web_search":true,"image_generation":true,"code_interpreter":true}}}
+
+[RESP] https://www.google.com/measurement/1p-conversion/?random=234270846&cv=11&tid=G-Z8QTHYBHP3&fst=1782751520470&fmt=8&en=first_visit&gtm=45je66p0v9218837095za200zd9218837095xec&gcd=13l3l3l3l1l1&dma=0&tag_exp=115616986~115938466~115938468~119027224~119576891~119576895&u_w=800&u_h=600&url=https%3A%2F%2Fchat.z.ai%2Fauth%3Fresponse_type%3Dcode%26client_id%3Dclient_AWMyELh5Radi8O4B4VKt4w%26redirect_uri%3Dhttps%253A%252F%252Focr.z.ai%252F%26state%3Deuf_1DzauGlKL7JGT5TK_w%253D%253D&ref=https%3A%2F%2Focr.z.ai%2F&gacid=352254528.1782751520&frm=0&tiba=Z.ai%20-%20Advanced%20AI%20Chatbot%20%26%20Agent%20powered%20by%20GLM-5.2&gtm_ee=1&npa=0&pscdl=noapi&auid=116290914.1782751520&uaa=x86&uab=64&uafvl=Google%2520Chrome%3B149.0.7827.115%7CChromium%3B149.0.7827.115%7CNot)A%253BBrand%3B24.0.0.0&uamb=0&uam=&uap=Windows&uapv=15.0.0&uaw=0&rcb=4&ct_cookie_present=false&crd=CLTesQII8t-xAgit4bECCK_hsQIIobixAgixwbECCLDBsQIIscOxAgiKxbECCMLJsQIItMaxAgiT2rECCNvcsQIIh9uxAgjTxbECCOvMsQII7c6xAgjVz7ECCPTasQII_eOxAgjL47ECCK7lsQIIyeOxAgiX1LECCMnbsQIIzeaxAgix4bECCLPhsQIIpt2xAgiw3rECCIDbsQI&cerd=CgEA&fsk=ChEI8K-I0gYQ9bfE7MXDuZWhARIsAFGWD_WKMz5M-0Jb0ERp4s65vBbzsIHCISHKLB_jW9c_8-uSezDXQ9aqXYkaAsIS&pscrd=IhMIreW9vvKslQMVe_BMAh3d4wHmQlhDaEVJOEstSTBnWVEyZnVraDVXeTZOSE5BUkl0QUpMa083VXV1TGw4WjhzY3NDNVdyNEpyY01vSVhhcTFYcTFBZFNjQldJejQ3QmJ0MUJaNnREY3ZlMERHegwICWIICAAQABgAIAA | Status: 200
+Response: 
+
+[RESP] https://chat.z.ai/api/v1/users/user/settings/update | Status: 200
+Response: {"ui":{"timezone":"Asia/Saigon"}}
+
+[RESP] https://chat.z.ai/api/models | Status: 200
+Response: {"data":[{"id":"glm-5.2","name":"GLM-5.2","object":"model","created":1780672881,"owned_by":"openai","urlIdx":1,"openai":{"id":"glm-5.2"},"info":{"id":"glm-5.2","user_id":"system","base_model_id":null,"name":"GLM-5.2","params":{"max_tokens":64064,"temperature":1,"top_p":0.95},"meta":{"capabilities":{"agent_mode":true,"citations":false,"file_qa":true,"free_think":true,"language_detection":false,"mcp":true,"preview_mode":false,"reasoning_effort":true,"restore_n_source":false,"returnFc":true,"returnThink":true,"skip_think":true,"think":true,"vision":false,"vlm_tools_enable":false,"vlm_web_search_enable":false,"vlm_website_mode":false,"web_search":true},"description":"Flagship model, excels at coding and long-horizon tasks","mcpServerIds":["deep-web-search","ppt-maker","vibe-coding","image-search","advanced-search"],"profile_image_url":"/static/favicon.png","suggestion_prompts":[{"display_name":"default 5.0 chat mode","features":[{"server":"tool_selector_h","status":"hidden","type":"tool_se
+
+[REQ] POST | https://analytics.google.com/g/collect?v=2&tid=G-Z8QTHYBHP3&gtm=45je66p0v9218837095za200zd9218837095&_p=1782751519898&gcd=13l3l3l3l1l1&npa=0&dma=0&_eu=AEAAAGQC&ae=a&are=1&cid=352254528.1782751520&frm=0&pscdl=noapi&rcb=4&sr=800x600&uaa=x86&uab=64&uafvl=Google%2520Chrome%3B149.0.7827.115%7CChromium%3B149.0.7827.115%7CNot)A%253BBrand%3B24.0.0.0&uam=&uamb=0&uap=Windows&uapv=15.0.0&uaw=0&ul=en-us&gaf=2&_s=2&tag_exp=115616986~115938466~115938468~119027224~119576891~119576895&sid=1782751520&sct=1&seg=0&dl=https%3A%2F%2Fchat.z.ai%2Fauth%3Fresponse_type%3Dcode%26client_id%3Dclient_AWMyELh5Radi8O4B4VKt4w%26redirect_uri%3Dhttps%253A%252F%252Focr.z.ai%252F%26state%3Deuf_1DzauGlKL7JGT5TK_w%253D%253D&dr=https%3A%2F%2Focr.z.ai%2F&dt=Z.ai%20-%20Advanced%20AI%20Chatbot%20%26%20Agent%20powered%20by%20GLM-5.2&en=scroll&epn.percent_scrolled=90&_et=7&tfd=5918
+Headers: {"sec-ch-ua-platform":"\"Windows\"","referer":"","user-agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/149.0.0.0 Safari/537.36","sec-ch-ua":"\"Google Chrome\";v=\"149\", \"Chromium\";v=\"149\", \"Not)A;Brand\";v=\"24\"","sec-ch-ua-mobile":"?0"}
+Body: 
+
+[RESP] https://analytics.google.com/g/collect?v=2&tid=G-Z8QTHYBHP3&gtm=45je66p0v9218837095za200zd9218837095&_p=1782751519898&gcd=13l3l3l3l1l1&npa=0&dma=0&_eu=AEAAAGQC&ae=a&are=1&cid=352254528.1782751520&frm=0&pscdl=noapi&rcb=4&sr=800x600&uaa=x86&uab=64&uafvl=Google%2520Chrome%3B149.0.7827.115%7CChromium%3B149.0.7827.115%7CNot)A%253BBrand%3B24.0.0.0&uam=&uamb=0&uap=Windows&uapv=15.0.0&uaw=0&ul=en-us&gaf=2&_s=2&tag_exp=115616986~115938466~115938468~119027224~119576891~119576895&sid=1782751520&sct=1&seg=0&dl=https%3A%2F%2Fchat.z.ai%2Fauth%3Fresponse_type%3Dcode%26client_id%3Dclient_AWMyELh5Radi8O4B4VKt4w%26redirect_uri%3Dhttps%253A%252F%252Focr.z.ai%252F%26state%3Deuf_1DzauGlKL7JGT5TK_w%253D%253D&dr=https%3A%2F%2Focr.z.ai%2F&dt=Z.ai%20-%20Advanced%20AI%20Chatbot%20%26%20Agent%20powered%20by%20GLM-5.2&en=scroll&epn.percent_scrolled=90&_et=7&tfd=5918 | Status: 204
+Response: 
+

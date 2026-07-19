@@ -68,6 +68,37 @@ export function parseResponse(rawText: string, providerId: string): string {
     }
   }
 
+  // If provider is aistudio, parse nested json arrays to find the translation text block
+  if (providerId === 'aistudio') {
+    try {
+      const parsed = JSON.parse(cleaned);
+      const scan = (obj: any): string | null => {
+        if (typeof obj === 'string') {
+          if (obj.includes('translations')) return obj;
+        }
+        if (Array.isArray(obj)) {
+          for (const x of obj) {
+            const res = scan(x);
+            if (res) return res;
+          }
+        }
+        if (obj !== null && typeof obj === 'object') {
+          for (const key of Object.keys(obj)) {
+            const res = scan(obj[key]);
+            if (res) return res;
+          }
+        }
+        return null;
+      };
+      const found = scan(parsed);
+      if (found) {
+        cleaned = found.trim();
+      }
+    } catch (e) {
+      // Ignore parsing errors
+    }
+  }
+
   // 1. Try our highly-robust Regex parser to extract {"id": N, "text": "..."} elements
   // even if they have unescaped quotes inside the text field!
   const list: Array<{ id: number; text: string }> = [];

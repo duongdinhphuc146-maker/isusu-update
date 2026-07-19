@@ -57,6 +57,21 @@ export const SUPPORTED_LANGUAGES = [
   { code: 'vi', name: 'Vietnamese' },
 ];
 
+export interface CharacterEntry {
+  id: string;
+  name: string;
+  gender: string;
+  traits: string;
+  voice_type?: string;
+  resource_id?: string;
+}
+
+export interface PipelineStep {
+  name: string;
+  status: 'idle' | 'processing' | 'done' | 'error';
+  message?: string;
+}
+
 export interface TranslateState {
   providers: TranslateProvider[];
   selectedProvider: string;
@@ -72,18 +87,26 @@ export interface TranslateState {
   translateLoading: boolean;
   sessions: CapturedSession[];
   translateLogs: string[];
+  voices: Voice[];
+  audioUrl: string | null;
+  dialogueMode: boolean;
+  characterMap: CharacterEntry[];
+  pipelineSteps: PipelineStep[];
 
   setSrtInput: (srt: string) => void;
   setSelectedProvider: (provider: string) => void;
   setTargetLang: (lang: string) => void;
   setTranslatedSRT: (srt: string) => void;
+  setDialogueMode: (mode: boolean) => void;
+  updateCharacterVoice: (id: string, voiceType: string, resourceId: string) => void;
 
   fetchProviders: () => Promise<void>;
+  fetchVoices: () => Promise<void>;
   fetchSessions: () => Promise<void>;
   startCaptureSession: (provider: string) => Promise<void>;
   stopCaptureSession: () => Promise<void>;
   deleteSession: (provider: string) => Promise<void>;
-  startTranslation: () => Promise<void>;
+  startTranslation: (stage?: 'profile' | 'dub') => Promise<void>;
   cancelTranslation: () => void;
   resumeTranslationPolling: () => void;
 }

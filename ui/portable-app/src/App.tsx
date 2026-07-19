@@ -6,7 +6,11 @@ import VoicePage from './dashboard/pages/VoicePage';
 import SubtitlePage from './dashboard/pages/SubtitlePage';
 import STTPage from './dashboard/pages/STTPage';
 import TranslatePage from './dashboard/pages/TranslatePage';
+import DialoguePage from './dashboard/pages/DialoguePage';
 import SystemPage from './dashboard/pages/SystemPage';
+import OCRPage from './dashboard/pages/OCRPage';
+import VideoPage from './dashboard/pages/VideoPage';
+import VieNeuTTSPage from './dashboard/pages/VieNeuTTSPage';
 import ToastContainer from './dashboard/components/ToastContainer';
 
 import { Voice } from './dashboard/types';
@@ -26,7 +30,7 @@ export default function App() {
 
   useEffect(() => {
     // If activeTab is not one of the available tabs, reset to home
-    if (!['home', 'tts', 'srt', 'stt', 'system', 'translate'].includes(activeTab)) {
+    if (!['home', 'tts', 'srt', 'stt', 'system', 'translate', 'dialogue', 'ocr', 'video', 'vieneu-tts'].includes(activeTab)) {
       setActiveTab('home');
     }
 
@@ -71,6 +75,8 @@ export default function App() {
           />
         )}
 
+        {activeTab === 'vieneu-tts' && <VieNeuTTSPage />}
+
         {activeTab === 'srt' && (
           <SubtitlePage
             voices={voices}
@@ -83,6 +89,12 @@ export default function App() {
         {activeTab === 'stt' && <STTPage />}
 
         {activeTab === 'translate' && <TranslatePage />}
+
+        {activeTab === 'dialogue' && <DialoguePage />}
+
+        {activeTab === 'ocr' && <OCRPage />}
+
+        {activeTab === 'video' && <VideoPage />}
 
         {activeTab === 'system' && <SystemPage />}
       </DashboardLayout>

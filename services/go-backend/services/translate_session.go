@@ -8,6 +8,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	"go-backend/services/go-backend/internal/httpx"
@@ -180,4 +181,56 @@ func ReplayViaBridge(ctx context.Context, jsonPrompt string, provider string) (s
 	}
 
 	return respJSON.Response, nil
+}
+
+// TranslateSessionV2 handles translation via a browser session for Dialogue Mode.
+func TranslateSessionV2(ctx context.Context, provider string, targetLang string, cmap *CharacterMap, chunk OverlapChunk) ([]MultiTaskResult, error) {
+	bridgeProvider := strings.TrimSuffix(provider, "-session")
+	cmapData, _ := json.Marshal(cmap)
+	var prefixLines []string
+	for _, seg := range chunk.OverlapPrefix {
+		prefixLines = append(prefixLines, fmt.Sprintf("ID: %d | Text: %s", seg.Index, seg.Text))
+	}
+	type SegInput struct {
+		ID   int    `json:"id"`
+		Text string `json:"text"`
+	}
+	var coreInputs []SegInput
+	for _, seg := range chunk.CoreSegments {
+		coreInputs = append(coreInputs, SegInput{ID: seg.Index, Text: seg.Text})
+	}
+	coreData, _ := json.Marshal(coreInputs)
+
+	systemInstructions := fmt.Sprintf(`You are an expert subtitle translator and dialogue director.
+Your tasks are:
+1. Translate the 'text' of the core segments to %s naturally, preserving style, slang, and context.
+2. Identify the 'speaker' ID (from the provided Character Map catalog) for each core segment. If a speaker is unknown or not in the catalog, default to SPK_DEFAULT or dynamically assign a new ID like SPK_01.
+3. Classify the 'emotion' (e.g. neutral, happy, angry, sad, excited, whisper) of the speaker in each core segment.
+
+The 'Overlap Prefix' is provided ONLY for conversation history context. DO NOT translate, process, or output the overlap segments. ONLY output translations for the Core segments.
+
+Character Map Catalog:
+%s
+
+Overlap Prefix Context (Read-Only):
+%s
+
+Output MUST conform to valid JSON schema:
+{"results": [{"id": 1, "speaker": "SPK_01", "emotion": "neutral", "text": "translated text"}]}`, targetLang, string(cmapData), strings.Join(prefixLines, "\n"))
+
+	fullPrompt := fmt.Sprintf("%s\n\nCore input segments JSON:\n%s", systemInstructions, string(coreData))
+	respText, err := ReplayViaBridge(ctx, fullPrompt, bridgeProvider)
+	if err != nil {
+		return nil, err
+	}
+
+	cleaned := CleanAndExtractJSON(respText)
+	var mtaskResp struct {
+		Results []MultiTaskResult `json:"results"`
+	}
+	if jsonErr := json.Unmarshal([]byte(cleaned), &mtaskResp); jsonErr != nil {
+		return nil, fmt.Errorf("failed to parse session translation JSON: %w, raw: %s", jsonErr, cleaned)
+	}
+
+	return mtaskResp.Results, nil
 }

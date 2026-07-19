@@ -7,10 +7,14 @@ import (
 	"crypto/x509"
 	"encoding/base64"
 	"encoding/hex"
+	"encoding/json"
 	"encoding/pem"
 	"fmt"
 	"math/big"
+	"os"
 	"strings"
+	"sync"
+	"time"
 )
 
 const (
@@ -45,6 +49,102 @@ type DeviceInfo struct {
 	Pf             string `json:"pf"`
 	Tdid           string `json:"tdid"`
 	UserAgent      string `json:"user_agent"`
+}
+
+type PoolDevice struct {
+	Info       DeviceInfo
+	CooldownTo time.Time
+	LastUsed   time.Time
+}
+
+type DevicePool struct {
+	mu      sync.Mutex
+	devices []PoolDevice
+}
+
+var (
+	GlobalDevicePool *DevicePool
+	poolOnce         sync.Once
+)
+
+func InitDevicePool(poolFilePath string) {
+	poolOnce.Do(func() {
+		GlobalDevicePool = &DevicePool{
+			devices: []PoolDevice{},
+		}
+		data, err := os.ReadFile(poolFilePath)
+		if err == nil {
+			var list []DeviceInfo
+			if err := json.Unmarshal(data, &list); err == nil {
+				for _, info := range list {
+					GlobalDevicePool.devices = append(GlobalDevicePool.devices, PoolDevice{
+						Info:     info,
+						LastUsed: time.Now().Add(-1 * time.Hour),
+					})
+				}
+			}
+		}
+		// Fallback if empty or failed to load
+		if len(GlobalDevicePool.devices) == 0 {
+			for i := 0; i < 5; i++ {
+				GlobalDevicePool.devices = append(GlobalDevicePool.devices, PoolDevice{
+					Info:     GetDynamicDevice(),
+					LastUsed: time.Now().Add(-1 * time.Hour),
+				})
+			}
+		}
+	})
+}
+
+func GetNextDevice() DeviceInfo {
+	if GlobalDevicePool == nil {
+		InitDevicePool("projects/device_pool.json")
+	}
+	GlobalDevicePool.mu.Lock()
+	defer GlobalDevicePool.mu.Unlock()
+
+	now := time.Now()
+	var selectedIdx = -1
+	var bestTime time.Time
+
+	// Find the device that is not in cooldown, prioritizing the one used least recently.
+	for i, dev := range GlobalDevicePool.devices {
+		if dev.CooldownTo.After(now) {
+			continue
+		}
+		if selectedIdx == -1 || dev.LastUsed.Before(bestTime) {
+			selectedIdx = i
+			bestTime = dev.LastUsed
+		}
+	}
+
+	// Fallback to any device if all are cooling down (highly unlikely)
+	if selectedIdx == -1 {
+		for i, dev := range GlobalDevicePool.devices {
+			if selectedIdx == -1 || dev.LastUsed.Before(bestTime) {
+				selectedIdx = i
+				bestTime = dev.LastUsed
+			}
+		}
+	}
+
+	GlobalDevicePool.devices[selectedIdx].LastUsed = now
+	return GlobalDevicePool.devices[selectedIdx].Info
+}
+
+func MarkDeviceCooldown(deviceID string, duration time.Duration) {
+	if GlobalDevicePool == nil {
+		return
+	}
+	GlobalDevicePool.mu.Lock()
+	defer GlobalDevicePool.mu.Unlock()
+
+	for i, dev := range GlobalDevicePool.devices {
+		if dev.Info.DeviceID == deviceID {
+			GlobalDevicePool.devices[i].CooldownTo = time.Now().Add(duration)
+			break
+		}
+	}
 }
 
 var userAgents = []string{

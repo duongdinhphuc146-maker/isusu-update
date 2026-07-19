@@ -7,7 +7,6 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"strconv"
 	"strings"
 
 	"github.com/google/uuid"
@@ -48,23 +47,37 @@ func ProcessSTTInChunks(inputPath string, ext string, lang string, transLang str
 		}
 	}
 
+	hw := GetHwaccelSetting()
 	chunkPattern := filepath.Join(tempDir, "chunk_%03d"+audioExt)
 	var cmd *exec.Cmd
 	if useCopy {
 		logx.Info("Using stream copy (no-transcode) for audio segmenting", "codec", audioExt)
-		cmd = exec.Command("ffmpeg", "-y", "-i", inputPath, "-f", "segment", "-segment_time", "900", "-vn", "-c:a", "copy", chunkPattern)
+		if hw != "" && hw != "none" {
+			cmd = exec.Command("ffmpeg", "-y", "-hwaccel", hw, "-i", inputPath, "-f", "segment", "-segment_time", "900", "-vn", "-c:a", "copy", chunkPattern)
+		} else {
+			cmd = exec.Command("ffmpeg", "-y", "-i", inputPath, "-f", "segment", "-segment_time", "900", "-vn", "-c:a", "copy", chunkPattern)
+		}
 	} else {
 		logx.Info("Falling back to full transcode to MP3")
 		audioExt = ".mp3"
 		chunkPattern = filepath.Join(tempDir, "chunk_%03d.mp3")
-		cmd = exec.Command("ffmpeg", "-y", "-i", inputPath, "-f", "segment", "-segment_time", "900", "-vn", "-ar", "16000", "-ac", "1", "-c:a", "libmp3lame", chunkPattern)
+		if hw != "" && hw != "none" {
+			cmd = exec.Command("ffmpeg", "-y", "-hwaccel", hw, "-i", inputPath, "-f", "segment", "-segment_time", "900", "-vn", "-ar", "16000", "-ac", "1", "-c:a", "libmp3lame", chunkPattern)
+		} else {
+			cmd = exec.Command("ffmpeg", "-y", "-i", inputPath, "-f", "segment", "-segment_time", "900", "-vn", "-ar", "16000", "-ac", "1", "-c:a", "libmp3lame", chunkPattern)
+		}
 	}
 
 	if out, err := cmd.CombinedOutput(); err != nil {
 		logx.Error("Fast segment failed, falling back to full transcode to MP3", err, "output", string(out))
 		audioExt = ".mp3"
 		chunkPattern = filepath.Join(tempDir, "chunk_%03d.mp3")
-		fallbackCmd := exec.Command("ffmpeg", "-y", "-i", inputPath, "-f", "segment", "-segment_time", "900", "-vn", "-ar", "16000", "-ac", "1", "-c:a", "libmp3lame", chunkPattern)
+		var fallbackCmd *exec.Cmd
+		if hw != "" && hw != "none" {
+			fallbackCmd = exec.Command("ffmpeg", "-y", "-hwaccel", hw, "-i", inputPath, "-f", "segment", "-segment_time", "900", "-vn", "-ar", "16000", "-ac", "1", "-c:a", "libmp3lame", chunkPattern)
+		} else {
+			fallbackCmd = exec.Command("ffmpeg", "-y", "-i", inputPath, "-f", "segment", "-segment_time", "900", "-vn", "-ar", "16000", "-ac", "1", "-c:a", "libmp3lame", chunkPattern)
+		}
 		if fallbackOut, fallbackErr := fallbackCmd.CombinedOutput(); fallbackErr != nil {
 			logx.Error("FFmpeg fallback chunking failed", fallbackErr, "output", string(fallbackOut))
 			return "", "", fmt.Errorf("failed to split audio file: %w", fallbackErr)
@@ -128,67 +141,4 @@ func ProcessSTTInChunks(inputPath string, ext string, lang string, transLang str
 	}
 
 	return strings.Join(finalTexts, " "), strings.Join(finalSrtLines, "\n"), nil
-}
-
-// OffsetSRT parses SRT, offsets all timestamps, and adjusts subtitle index counters.
-func OffsetSRT(srt string, offsetMs int, startIndex int) (string, int) {
-	lines := strings.Split(strings.ReplaceAll(srt, "\r\n", "\n"), "\n")
-	var result []string
-	indexCounter := startIndex
-	expectTime := false
-
-	for i := 0; i < len(lines); i++ {
-		line := strings.TrimSpace(lines[i])
-		if line == "" {
-			if len(result) > 0 && result[len(result)-1] != "" {
-				result = append(result, "")
-			}
-			continue
-		}
-
-		// Check if it's the index line
-		if _, err := strconv.Atoi(line); err == nil && !expectTime {
-			result = append(result, strconv.Itoa(indexCounter))
-			indexCounter++
-			expectTime = true
-			continue
-		}
-
-		if strings.Contains(line, "-->") {
-			parts := strings.Split(line, "-->")
-			if len(parts) == 2 {
-				start := shiftSRTTime(strings.TrimSpace(parts[0]), offsetMs)
-				end := shiftSRTTime(strings.TrimSpace(parts[1]), offsetMs)
-				result = append(result, fmt.Sprintf("%s --> %s", start, end))
-			} else {
-				result = append(result, line)
-			}
-			expectTime = false
-			continue
-		}
-
-		result = append(result, line)
-		expectTime = false
-	}
-
-	return strings.Join(result, "\n"), indexCounter
-}
-
-func shiftSRTTime(t string, offsetMs int) string {
-	var h, m, s, ms int
-	_, err := fmt.Sscanf(t, "%d:%d:%d,%d", &h, &m, &s, &ms)
-	if err != nil {
-		return t
-	}
-	totalMs := h*3600000 + m*60000 + s*1000 + ms + offsetMs
-	if totalMs < 0 {
-		totalMs = 0
-	}
-	nh := totalMs / 3600000
-	totalMs %= 3600000
-	nm := totalMs / 60000
-	totalMs %= 60000
-	ns := totalMs / 1000
-	nms := totalMs % 1000
-	return fmt.Sprintf("%02d:%02d:%02d,%03d", nh, nm, ns, nms)
 }
